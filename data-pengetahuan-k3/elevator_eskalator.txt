@@ -1,0 +1,65 @@
+#======================================================================
+# BUKU PENGETAHUAN & MATRIKS KEPUTUSAN: INSPEKSI ELEVATOR & ESKALATOR
+#======================================================================
+# Dokumen ini berisi parameter kunci, kriteria kelayakan, dan rekomendasi
+# standar untuk digunakan sebagai dasar analisis laporan inspeksi.
+# Regulasi utama yang menjadi acuan adalah Permenaker No. 6 Tahun 2017.
+#======================================================================
+
+
+## KOMPONEN: KABEL BAJA UTAMA (HOIST ROPES)
+Tujuan: Memastikan integritas struktural dan kekuatan angkat utama elevator.
+
+### Parameter: Korosi / Karat
+- KRITERIA LAYAK: Ditemukan korosi permukaan ringan dan merata. Tidak ada serpihan (flaking) atau pengurangan diameter kabel yang signifikan.
+- KRITERIA TIDAK LAYAK: Ditemukan korosi parah yang menyebabkan pitting (lubang-lubang kecil), atau serpihan karat yang rontok saat disentuh.
+- REKOMENDASI (JIKA LAYAK): Lanjutkan monitoring visual pada jadwal inspeksi berikutnya. Pastikan jadwal pelumasan kabel dipatuhi untuk mencegah perburukan.
+- REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO TINGGI] [WAJIB] Segera rekomendasikan PENGGANTIAN untuk seluruh set kabel baja. Lampirkan foto sebagai bukti. Unit tidak boleh dioperasikan sampai penggantian selesai.
+
+### Parameter: Kawat Putus (Broken Wires)
+- KRITERIA LAYAK: Jumlah kawat putus secara acak kurang dari 5 buah dalam satu panjang lilitan (strand lay).
+- KRITERIA TIDAK LAYAK: Jumlah kawat putus 5 atau lebih dalam satu panjang lilitan, atau ditemukan kawat putus yang terkonsentrasi di satu area.
+- REKOMENDASI (JIKA LAYAK): Catat lokasi dan jumlah kawat putus. Tingkatkan frekuensi pemantauan pada area tersebut.
+- REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO TINGGI] [WAJIB] Segera rekomendasikan PENGGANTIAN untuk seluruh set kabel baja. Ini adalah indikasi kelelahan material yang serius.
+
+---
+
+## KOMPONEN: SISTEM REM DARURAT (SAFETY BRAKE / SAFETY GEAR)
+Tujuan: Memastikan unit dapat berhenti dengan aman dalam kondisi darurat (misal: kecepatan berlebih).
+
+### Parameter: Tes Fungsi Rem (Overspeed Test / Drop Test)
+- KRITERIA LAYAK: Rem darurat berhasil aktif, mengunci, dan menghentikan laju kabin dengan sempurna sesuai spesifikasi pabrikan saat tes dilakukan. Tanda cengkraman pada rel pemandu (guide rail) terlihat normal dan seragam.
+- KRITERIA TIDAK LAYAK: Rem darurat gagal aktif, terjadi selip (slip), cengkraman lemah, atau tidak mampu menghentikan kabin sepenuhnya.
+- REKOMENDASI (JIKA LAYAK): Sistem rem darurat dinyatakan berfungsi prima. Lakukan pengujian kembali sesuai jadwal pemeliharaan preventif.
+- REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO KRITIS] [STOP OPERASIONAL] Unit harus segera dihentikan operasinya (shutdown). Wajib lakukan overhaul dan kalibrasi ulang sistem rem oleh teknisi spesialis yang bersertifikat. Jangan operasikan unit sampai ada sertifikasi ulang.
+
+---
+
+## KOMPONEN: SENSOR & MEKANISME PINTU
+Tujuan: Memastikan keselamatan pengguna saat masuk dan keluar kabin serta mencegah pintu terjepit.
+
+### Parameter: Sensor Keamanan (Safety Edge / Light Curtain)
+- KRITERIA LAYAK: Pintu otomatis terbuka kembali dengan responsif saat sensor mendeteksi halangan, tanpa kontak fisik yang keras.
+- KRITERIA TIDAK LAYAK: Sensor gagal mendeteksi halangan, pintu tetap menutup dan menjepit objek, atau respon sensor lambat.
+- REKOMENDASI (JIKA LAYAK): Sensor keamanan berfungsi normal.
+- REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO SEDANG] Lakukan pembersihan pada sensor optik (light curtain). Jika masalah berlanjut, lakukan kalibrasi ulang atau rekomendasikan penggantian unit sensor untuk mencegah insiden pengguna terjepit.
+
+### Parameter: Penutupan Pintu (Door Closing)
+- KRITERIA LAYAK: Pintu menutup dengan halus, rapat, dan tanpa suara benturan keras.
+- KRITERIA TIDAK LAYAK: Pintu menutup dengan membanting, tidak rapat, atau memantul kembali tanpa sebab yang jelas.
+- REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO RENDAH] Rekomendasikan penyetelan ulang pada mekanisme penggantung pintu (door hanger) dan kecepatan motor pintu untuk meningkatkan kenyamanan dan mencegah keausan dini.
+
+---
+
+## KOMPONEN: KELISTRIKAN DARURAT
+Tujuan: Memastikan keselamatan dan ketenangan pengguna saat terjadi pemadaman listrik.
+
+### Parameter: Lampu Darurat (Emergency Light)
+- KRITERIA LAYAK: Lampu darurat di dalam kabin menyala secara otomatis, terang, dan bertahan minimal selama 1 jam saat tes pemadaman listrik dilakukan.
+- KRITERIA TIDAK LAYAK: Lampu darurat mati total, redup, atau hanya menyala sebentar saat tes.
+- REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO TINGGI] Baterai atau unit lampu darurat wajib segera diganti. Ini adalah pelanggaran standar keselamatan dasar dan dapat menyebabkan kepanikan penumpang.
+
+### Parameter: Alarm & Interkom (Alarm & Intercom)
+- KRITERIA LAYAK: Tombol alarm berfungsi, dan komunikasi dua arah melalui interkom dengan ruang kontrol/sekuriti terdengar jelas.
+- KRITERIA TIDAK LAYAK: Tombol alarm tidak berfungsi, atau suara dari interkom putus-putus, tidak jelas, atau tidak ada sama sekali.
+- REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO TINGGI] Segera lakukan perbaikan pada sirkuit alarm dan unit interkom. Kegagalan fungsi ini dapat menghambat proses evakuasi saat darurat.
