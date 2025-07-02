@@ -6,7 +6,6 @@
 # Regulasi utama yang menjadi acuan adalah Permenaker No. 6 Tahun 2017.
 #======================================================================
 
-
 ## KOMPONEN: KABEL BAJA UTAMA (HOIST ROPES)
 Tujuan: Memastikan integritas struktural dan kekuatan angkat utama elevator.
 
@@ -17,12 +16,15 @@ Tujuan: Memastikan integritas struktural dan kekuatan angkat utama elevator.
 - REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO TINGGI] [WAJIB] Segera rekomendasikan PENGGANTIAN untuk seluruh set kabel baja. Lampirkan foto sebagai bukti. Unit tidak boleh dioperasikan sampai penggantian selesai.
 
 ### Parameter: Kawat Putus (Broken Wires)
-- KRITERIA LAYAK: Jumlah kawat putus secara acak kurang dari 5 buah dalam satu panjang lilitan (strand lay).
-- KRITERIA TIDAK LAYAK: Jumlah kawat putus 5 atau lebih dalam satu panjang lilitan, atau ditemukan kawat putus yang terkonsentrasi di satu area.
-- REKOMENDASI (JIKA LAYAK): Catat lokasi dan jumlah kawat putus. Tingkatkan frekuensi pemantauan pada area tersebut.
+- KRITERIA LAYAK: Tidak ada kawat yang putus, kusut, atau rusak.
+- KRITERIA TIDAK LAYAK: Jumlah kawat putus 1 atau lebih dalam satu panjang lilitan (satu putaran tali pada puli), atau ditemukan kawat putus yang terkonsentrasi di satu area.
+- REKOMENDASI (JIKA LAYAK): Tidak ada tindakan segera yang diperlukan. Lanjutkan pemantauan rutin.
 - REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO TINGGI] [WAJIB] Segera rekomendasikan PENGGANTIAN untuk seluruh set kabel baja. Ini adalah indikasi kelelahan material yang serius.
 
----
+### Parameter: Penyusutan Diameter Kawat
+- KRITERIA LAYAK: Penyusutan diameter kawat kurang dari 5% dari diameter nominal.
+- KRITERIA TIDAK LAYAK: Jumlah penyusutan diameter kawat 5% atau lebih.
+- REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO TINGGI] Lakukan pengukuran ulang untuk konfirmasi. Jika terverifikasi, rekomendasikan PENGGANTIAN seluruh set kabel baja karena ini mengindikasikan kerusakan inti internal.
 
 ## KOMPONEN: SISTEM REM DARURAT (SAFETY BRAKE / SAFETY GEAR)
 Tujuan: Memastikan unit dapat berhenti dengan aman dalam kondisi darurat (misal: kecepatan berlebih).
@@ -33,8 +35,6 @@ Tujuan: Memastikan unit dapat berhenti dengan aman dalam kondisi darurat (misal:
 - REKOMENDASI (JIKA LAYAK): Sistem rem darurat dinyatakan berfungsi prima. Lakukan pengujian kembali sesuai jadwal pemeliharaan preventif.
 - REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO KRITIS] [STOP OPERASIONAL] Unit harus segera dihentikan operasinya (shutdown). Wajib lakukan overhaul dan kalibrasi ulang sistem rem oleh teknisi spesialis yang bersertifikat. Jangan operasikan unit sampai ada sertifikasi ulang.
 
----
-
 ## KOMPONEN: SENSOR & MEKANISME PINTU
 Tujuan: Memastikan keselamatan pengguna saat masuk dan keluar kabin serta mencegah pintu terjepit.
 
@@ -44,15 +44,18 @@ Tujuan: Memastikan keselamatan pengguna saat masuk dan keluar kabin serta menceg
 - REKOMENDASI (JIKA LAYAK): Sensor keamanan berfungsi normal.
 - REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO SEDANG] Lakukan pembersihan pada sensor optik (light curtain). Jika masalah berlanjut, lakukan kalibrasi ulang atau rekomendasikan penggantian unit sensor untuk mencegah insiden pengguna terjepit.
 
+### Parameter: Saklar Pengaman Pintu (Door Safety Switch / Interlock)
+- KRITERIA LAYAK: Elevator tidak dapat bergerak (start) saat salah satu pintu (pintu kabin atau pintu lantai) dalam kondisi terbuka atau tidak terkunci rapat.
+- KRITERIA TIDAK LAYAK: Elevator masih bisa bergerak atau mencoba bergerak saat salah satu pintu belum tertutup dan terkunci sempurna.
+- REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO KRITIS] [STOP OPERASIONAL] Segera hentikan operasional unit. Ini adalah kegagalan fatal pada sistem keamanan. Lakukan pemeriksaan dan perbaikan segera pada sirkuit interlock atau saklar pintu yang rusak.
+
 ### Parameter: Penutupan Pintu (Door Closing)
 - KRITERIA LAYAK: Pintu menutup dengan halus, rapat, dan tanpa suara benturan keras.
 - KRITERIA TIDAK LAYAK: Pintu menutup dengan membanting, tidak rapat, atau memantul kembali tanpa sebab yang jelas.
 - REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO RENDAH] Rekomendasikan penyetelan ulang pada mekanisme penggantung pintu (door hanger) dan kecepatan motor pintu untuk meningkatkan kenyamanan dan mencegah keausan dini.
 
----
-
-## KOMPONEN: KELISTRIKAN DARURAT
-Tujuan: Memastikan keselamatan dan ketenangan pengguna saat terjadi pemadaman listrik.
+## KOMPONEN: KONTROL & KELISTRIKAN DARURAT
+Tujuan: Memastikan keselamatan, kontrol, dan ketenangan pengguna saat terjadi kondisi darurat atau pemadaman listrik.
 
 ### Parameter: Lampu Darurat (Emergency Light)
 - KRITERIA LAYAK: Lampu darurat di dalam kabin menyala secara otomatis, terang, dan bertahan minimal selama 1 jam saat tes pemadaman listrik dilakukan.
@@ -63,3 +66,13 @@ Tujuan: Memastikan keselamatan dan ketenangan pengguna saat terjadi pemadaman li
 - KRITERIA LAYAK: Tombol alarm berfungsi, dan komunikasi dua arah melalui interkom dengan ruang kontrol/sekuriti terdengar jelas.
 - KRITERIA TIDAK LAYAK: Tombol alarm tidak berfungsi, atau suara dari interkom putus-putus, tidak jelas, atau tidak ada sama sekali.
 - REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO TINGGI] Segera lakukan perbaikan pada sirkuit alarm dan unit interkom. Kegagalan fungsi ini dapat menghambat proses evakuasi saat darurat.
+
+### Parameter: Automatic Rescue Device (ARD)
+- KRITERIA LAYAK: Saat simulasi pemadaman listrik, sistem ARD aktif, menggerakkan kabin ke lantai terdekat, dan membuka pintu secara otomatis.
+- KRITERIA TIDAK LAYAK: Sistem ARD gagal aktif, kabin berhenti di antara lantai, atau pintu tidak terbuka setelah kabin berhenti.
+- REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO TINGGI] Lakukan pemeriksaan dan pengujian pada baterai dan modul kontrol ARD. Segera lakukan perbaikan atau penggantian. Penumpang dapat terjebak jika terjadi pemadaman listrik.
+
+### Parameter: Tombol Berhenti Darurat (Emergency Stop Switch)
+- KRITERIA LAYAK: Saat ditekan, tombol menghentikan pergerakan elevator secara seketika dan tetap pada posisi "stop". Elevator tidak dapat dijalankan kembali sebelum tombol direset (diputar atau ditarik).
+- KRITERIA TIDAK LAYAK: Tombol tidak berfungsi, macet, atau elevator tetap bergerak setelah tombol ditekan.
+- REKOMENDASI (JIKA TIDAK LAYAK): [RISIKO KRITIS] [STOP OPERASIONAL] Hentikan operasional unit. Tombol berhenti darurat adalah fitur keselamatan utama. Wajib lakukan penggantian unit tombol dan pengujian sirkuit terkait.
