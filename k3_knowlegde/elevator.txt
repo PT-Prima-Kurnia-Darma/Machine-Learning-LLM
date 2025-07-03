@@ -1,10 +1,10 @@
-#==========================================================================
+#======================================================================
 # BUKU PENGETAHUAN & MATRIKS KEPUTUSAN: INSPEKSI ELEVATOR & ESKALATOR
-#==========================================================================
+#======================================================================
 # Dokumen ini berisi parameter kunci, kriteria kelayakan, dan rekomendasi
 # standar untuk digunakan sebagai dasar analisis laporan inspeksi.
 # Regulasi utama yang menjadi acuan adalah Permenaker No. 6 Tahun 2017.
-#==========================================================================
+#======================================================================
 
 ## KOMPONEN: KABEL BAJA UTAMA (HOIST ROPES)
 Tujuan: Memastikan integritas struktural dan kekuatan angkat utama elevator.
