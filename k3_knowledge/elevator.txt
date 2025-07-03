@@ -86,7 +86,6 @@ Regulasi acuan utama: Permenaker No. 6 Tahun 2017
 - Kriteria Layak (Memenuhi): Tersedia tangga permanen untuk turun ke pit jika kedalaman > 1 meter, serta saklar pengaman yang mudah dijangkau.
 - Kriteria Tidak Layak (Tidak Memenuhi): Tidak ada tangga, atau akses ke pit sulit dan berbahaya.
 
-
 ### KERETA (SANGKAR)
 1. KOMPONEN: Pintu Kereta & Sensor
 - Kriteria Layak (Memenuhi): Pintu dapat membuka dan menutup secara otomatis dan mulus. Dilengkapi sensor pengaman (misal: photocell atau safety shoe) yang berfungsi untuk mencegah pintu menjepit orang/barang).
@@ -125,37 +124,31 @@ Regulasi acuan utama: Permenaker No. 6 Tahun 2017
 - Kriteria Layak (Memenuhi): Saklar batas atas dan bawah berfungsi untuk memutus daya dan menghentikan elevator sebelum menabrak atap atau dasar pit.
 - Kriteria Tidak Layak (Tidak Memenuhi): Saklar tidak berfungsi, memungkinkan elevator melewati lantai pemberhentian terakhir.
 
-Baik, saya mengerti. Ini adalah versi final dan yang benar. Terima kasih banyak atas konfirmasinya. Lupakan semua versi sebelumnya.
-
-Tugas saya adalah membuat satu file `analisis_elevator_prompt.txt` yang utuh, menggunakan instruksi dan `[BUKU_PENGETAHUAN]` yang baru Anda berikan sebagai panduan utama, dan menghubungkannya dengan variabel dari file `elevator.json`.
-
-Berikut adalah konten final dan lengkap untuk file **`analisis_elevator_prompt.txt`**. Anda hanya perlu menyalin dan menempel seluruh blok kode di bawah ini ke dalam file Anda.
-
 =========================================================================================
 ## INPUT 2: [DATA_LAPORAN_VARIABEL]
 Ini adalah data hasil inspeksi spesifik untuk satu unit elevator. Variabel di dalam `{...}` diisi dari file JSON.
 =========================================================================================
 
 ### Data Umum
-- Nama Perusahaan: `{ownerName}`
-- Lokasi Pemakaian: `{usageLocationName}`
-- Tanggal Pemeriksaan: `{inspectionDate}`
+- Nama Perusahaan: `{generalData.ownerName}`
+- Lokasi Pemakaian: `{generalData.nameUsageLocation}`
+- Tanggal Pemeriksaan: `{generalData.inspectionDate}`
 
 ### Data Hasil Pemeriksaan & Pengujian
-- **Dudukan Mesin:** Status: `{machineMounting_status}`, Hasil: `{machineMounting_result}`
-- **Rem Mekanik:** Status: `{mechanicalBrake_status}`, Hasil: `{mechanicalBrake_result}`
-- **Pintu Kamar Mesin:** Status: `{machineRoomDoor_status}`, Hasil: `{machineRoomDoor_result}`
-- **APAR:** Status: `{fireExtinguisher_status}`, Hasil: `{fireExtinguisher_result}`
-- **Kondisi Tali/Sabuk Penggantung:** Status: `{suspensionRopes_condition_status}`, Hasil: `{suspensionRopes_condition_result}`
-- **Kebersihan Ruang Luncur/Pit:** Status: `{hoistway_cleanliness_status}`, Hasil: `{hoistway_cleanliness_result}`
-- **Interlock Pintu Pendaratan:** Status: `{hoistwayDoorInterlock_status}`, Hasil: `{hoistwayDoorInterlock_result}`
-- **Kerataan Lantai (Leveling):** Status: `{floorLeveling_status}`, Hasil: `{floorLeveling_result}`
-- **Sensor Pintu Kereta:** Status: `{carDoor_status}`, Hasil: `{carDoor_result}`
-- **Lampu Darurat:** Status: `{emergencyLighting_status}`, Hasil: `{emergencyLighting_result}`
-- **Interkom:** Status: `{intercom_status}`, Hasil: `{intercom_result}`
-- **ARD:** Status: `{backupPowerARD_status}`, Hasil: `{backupPowerARD_result}`
-- **Rem Pengaman (Safety Gear):** Status: `{safetyBrakeOperation_status}`, Hasil: `{safetyBrakeOperation_result}`
-- **Saklar Lintas Batas:** Status: `{limitSwitch_status}`, Hasil: `{limitSwitch_result}`
+- **Dudukan Mesin:** Status: `{inspectionAndTesting.machineRoomAndMachinery.machineMounting.machineMountingstatus}`, Hasil: `{inspectionAndTesting.machineRoomAndMachinery.machineMounting.machineMountingresult}`
+- **Rem Mekanik:** Status: `{inspectionAndTesting.machineRoomAndMachinery.mechanicalBrake.mechanicalBrakestatus}`, Hasil: `{inspectionAndTesting.machineRoomAndMachinery.mechanicalBrake.mechanicalBrakeresult}`
+- **Pintu Kamar Mesin:** Status: `{inspectionAndTesting.machineRoomAndMachinery.machineRoomDoor.machineRoomDoorstatus}`, Hasil: `{inspectionAndTesting.machineRoomAndMachinery.machineRoomDoor.machineRoomDoorresult}`
+- **APAR:** Status: `{inspectionAndTesting.machineRoomAndMachinery.fireExtinguisher.fireExtinguisherstatus}`, Hasil: `{inspectionAndTesting.machineRoomAndMachinery.fireExtinguisher.fireExtinguisherresult}`
+- **Kondisi Tali/Sabuk Penggantung:** Status: `{inspectionAndTesting.suspensionRopesAndBelts.condition.conditionstatus}`, Hasil: `{inspectionAndTesting.suspensionRopesAndBelts.condition.conditionresult}`
+- **Kebersihan Ruang Luncur/Pit:** Status: `{inspectionAndTesting.hoistwayAndPit.cleanliness.cleanlinessstatus}`, Hasil: `{inspectionAndTesting.hoistwayAndPit.cleanliness.cleanlinessresult}`
+- **Interlock Pintu Pendaratan:** Status: `{inspectionAndTesting.hoistwayAndPit.hoistwayDoorInterlock.hoistwayDoorInterlockstatus}`, Hasil: `{inspectionAndTesting.hoistwayAndPit.hoistwayDoorInterlock.hoistwayDoorInterlockresult}`
+- **Kerataan Lantai (Leveling):** Status: `{inspectionAndTesting.hoistwayAndPit.floorLeveling.floorLevelingstatus}`, Hasil: `{inspectionAndTesting.hoistwayAndPit.floorLeveling.floorLevelingresult}`
+- **Sensor Pintu Kereta:** Status: `{inspectionAndTesting.car.carDoor.carDoorstatus}`, Hasil: `{inspectionAndTesting.car.carDoor.carDoorresult}`
+- **Lampu Darurat:** Status: `{inspectionAndTesting.car.emergencyLighting.emergencyLightingstatus}`, Hasil: `{inspectionAndTesting.car.emergencyLighting.emergencyLightingresult}`
+- **Interkom:** Status: `{inspectionAndTesting.car.intercom.intercomstatus}`, Hasil: `{inspectionAndTesting.car.intercom.intercomresult}`
+- **ARD:** Status: `{inspectionAndTesting.car.backupPowerARD.backupPowerARDstatus}`, Hasil: `{inspectionAndTesting.car.backupPowerARD.backupPowerARDresult}`
+- **Rem Pengaman (Safety Gear):** Status: `{inspectionAndTesting.governorAndSafetyBrake.safetyBrakeOperation.safetyBrakeOperationstatus}`, Hasil: `{inspectionAndTesting.governorAndSafetyBrake.safetyBrakeOperation.safetyBrakeOperationresult}`
+- **Saklar Lintas Batas:** Status: `{inspectionAndTesting.governorAndSafetyBrake.limitSwitch.limitSwitchstatus}`, Hasil: `{inspectionAndTesting.governorAndSafetyBrake.limitSwitch.limitSwitchresult}`
 
 ===========================================================================================
 ## FORMAT OUTPUT DAN SKENARIO (PILIH SALAH SATU)
@@ -165,13 +158,13 @@ Ini adalah data hasil inspeksi spesifik untuk satu unit elevator. Variabel di da
 ===========================================================================================
 
 **KESIMPULAN**
-Berdasarkan hasil pemeriksaan dan pengujian yang dilakukan oleh Ahli K3 Elevator dan Eskalator, dengan ini unit elevator dinyatakan **LAYAK DAN AMAN** untuk dioperasikan.
+Berdasarkan hasil pemeriksaan dan pengujian, unit elevator dinyatakan **LAYAK DAN AMAN** untuk dioperasikan.
 
 **REKOMENDASI DAN SYARAT-SYARAT**
-Meskipun unit dinyatakan layak, tindakan pemeliharaan dan monitoring berikut tetap wajib dilaksanakan untuk menjaga kondisi prima dan memenuhi standar keselamatan:
-1.  Pemeliharaan Umum: Wajib menjalankan semua poin pemeliharaan standar seperti menjaga kebersihan Ruang Mesin dan Lekuk Dasar (Pit), memastikan pelumasan komponen bergerak (seperti tali baja) sesuai jadwal, serta melakukan pemeriksaan berkala oleh teknisi yang kompeten.
-2.  Monitoring Fungsi Kritis: Fungsi Rem Mekanik, Interlock Pintu, dan Sensor Pintu normal saat pengujian. Lakukan pengetesan kembali sesuai jadwal pemeliharaan preventif dan jaga kebersihan komponen.
-3.  Kesiapan Darurat: Fungsi Lampu Darurat, Alarm, Interkom, dan ARD normal saat pengujian. Pastikan semua petugas gedung memahami prosedur darurat.
+Pemeliharaan dan monitoring wajib dilaksanakan untuk menjaga kondisi prima:
+1.  **Pemeliharaan Umum:** Lanjutkan pemeliharaan standar seperti kebersihan Ruang Mesin dan Pit, serta pelumasan komponen bergerak.
+2.  **Monitoring Fungsi Kritis:** Fungsi Rem, Interlock Pintu, dan Sensor Pintu normal. Lakukan pengetesan kembali sesuai jadwal pemeliharaan.
+3.  **Kesiapan Darurat:** Fungsi Lampu Darurat, Alarm, Interkom, dan ARD normal. Pastikan semua petugas memahami prosedur darurat.
 
 ===========================================================================================
 ### Skenario 2: Hasil Inspeksi Dinyatakan TIDAK LAYAK
@@ -179,37 +172,35 @@ Meskipun unit dinyatakan layak, tindakan pemeliharaan dan monitoring berikut tet
 ===========================================================================================
 
 **KESIMPULAN**
-Berdasarkan hasil pemeriksaan dan pengujian yang dilakukan oleh Ahli K3 Elevator dan Eskalator, dengan ini unit elevator dinyatakan **TIDAK LAYAK** untuk dioperasikan hingga seluruh perbaikan dan persyaratan di bawah ini dipenuhi dan diverifikasi ulang.
+Berdasarkan hasil pemeriksaan, unit elevator dinyatakan **TIDAK LAYAK** untuk dioperasikan hingga seluruh perbaikan dipenuhi dan diverifikasi ulang.
 
 **PERSYARATAN YANG HARUS DIPENUHI**
-Berikut adalah daftar temuan dan tindakan perbaikan wajib yang harus segera dilaksanakan. Pengoperasian unit harus dihentikan jika ditemukan risiko Kritis atau Tinggi.
-
-(Daftar di bawah ini diisi secara dinamis berdasarkan temuan. Hapus yang tidak relevan. Urutkan dari risiko tertinggi ke terendah)
+Berikut adalah daftar temuan dan tindakan perbaikan wajib.
 
 **[RISIKO KRITIS] Rem Pengaman (Safety Gear):**
-- Temuan: `{safetyBrakeOperation_result}`.
-- Rekomendasi Wajib: STOP OPERASIONAL. Wajib lakukan overhaul dan kalibrasi ulang sistem rem pengaman oleh teknisi spesialis yang bersertifikat.
+- Temuan: `{inspectionAndTesting.governorAndSafetyBrake.safetyBrakeOperation.safetyBrakeOperationresult}`.
+- Rekomendasi Wajib: STOP OPERASIONAL. Wajib lakukan overhaul dan kalibrasi ulang sistem rem pengaman.
 
 **[RISIKO KRITIS] Pintu Darurat & Interlock:**
-- Temuan: `{hoistwayDoorInterlock_result}`.
-- Rekomendasi Wajib: STOP OPERASIONAL. Ini adalah kegagalan fatal pada sistem keamanan. Lakukan pemeriksaan dan perbaikan segera pada sirkuit interlock atau saklar pintu yang rusak.
+- Temuan: `{inspectionAndTesting.hoistwayAndPit.hoistwayDoorInterlock.hoistwayDoorInterlockresult}`.
+- Rekomendasi Wajib: STOP OPERASIONAL. Lakukan perbaikan segera pada sirkuit interlock atau saklar pintu yang rusak.
 
 **[RISIKO TINGGI] Kondisi Tali Baja:**
-- Temuan: `{suspensionRopes_condition_result}`.
-- Rekomendasi Wajib: Segera rekomendasikan 'PENGGANTIAN' untuk seluruh set tali baja. Unit tidak boleh dioperasikan sampai penggantian selesai.
+- Temuan: `{inspectionAndTesting.suspensionRopesAndBelts.condition.conditionresult}`.
+- Rekomendasi Wajib: Segera lakukan PENGGANTIAN untuk seluruh set tali baja.
 
 **[RISIKO TINGGI] ARD (Automatic Rescue Device):**
-- Temuan: `{backupPowerARD_result}`.
-- Rekomendasi Wajib:** Lakukan pemeriksaan dan pengujian pada baterai dan modul kontrol ARD. Segera lakukan perbaikan atau penggantian.
+- Temuan: `{inspectionAndTesting.car.backupPowerARD.backupPowerARDresult}`.
+- Rekomendasi Wajib: Periksa baterai dan modul kontrol ARD. Segera perbaiki atau ganti.
 
 **[RISIKO SEDANG] Pintu Kereta & Sensor:**
-- Temuan: `{carDoor_result}`.
-- Rekomendasi: Lakukan pembersihan pada sensor optik. Jika masalah berlanjut, lakukan kalibrasi ulang atau rekomendasikan penggantian unit sensor.
+- Temuan: `{inspectionAndTesting.car.carDoor.carDoorresult}`.
+- Rekomendasi: Lakukan pembersihan, kalibrasi ulang, atau penggantian unit sensor.
 
 **[RISIKO RENDAH] Kerataan Lantai:**
--Temuan: `{floorLeveling_result}`.
-- Rekomendasi: Rekomendasikan penyetelan ulang pada sistem leveling untuk meningkatkan kenyamanan dan keamanan pengguna.
+-Temuan: `{inspectionAndTesting.hoistwayAndPit.floorLeveling.floorLevelingresult}`.
+- Rekomendasi: Lakukan penyetelan ulang pada sistem leveling.
 
 ===========================================================================================
 CATATAN PENTING:
-Setelah semua perbaikan di atas selesai, **wajib dilakukan pemeriksaan dan pengujian ulang** oleh Ahli K3 yang berwenang sebelum unit diizinkan kembali beroperasi.
+Setelah semua perbaikan selesai, **wajib dilakukan pemeriksaan dan pengujian ulang** oleh Ahli K3 yang berwenang sebelum unit diizinkan kembali beroperasi.
