@@ -1,118 +1,80 @@
 // file: server.js
 'use strict';
 
-// =================================================================
-// BAGIAN 1: IMPOR MODUL YANG DIBUTUHKAN
-// =================================================================
 require('dotenv').config();
 const Hapi = require('@hapi/hapi');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const fs = require('fs').promises; // Menggunakan 'fs' untuk membaca file
-const path = require('path');     // Menggunakan 'path' untuk menangani path file
+const fs = require('fs').promises;
+const path = require('path');
 
-// =================================================================
-// BAGIAN 2: INISIALISASI KLIEN GEMINI
-// =================================================================
 const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) {
+    throw new Error("GEMINI_API_KEY not found in .env file");
+}
 const genAI = new GoogleGenerativeAI(apiKey);
-// Kita gunakan model 2.5 Flash yang terbaru dan efisien
-const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-// =================================================================
-// BAGIAN 3: FUNGSI UTAMA SERVER HAPI
-// =================================================================
 const init = async () => {
     const server = Hapi.server({
         port: 3000,
         host: 'localhost',
     });
 
-    // --- Definisi Endpoint Generator Laporan Inspeksi ---
     server.route({
         method: 'POST',
-        path: '/generate-laporan-inspeksi',
+        path: '/generate-inspection-report',
         handler: async (request, h) => {
             try {
-                // 1. MENERIMA DATA DARI KLIEN (POSTMAN/APLIKASI MOBILE)
-                const { jenis_inspeksi, catatan_lapangan } = request.payload;
+                // PASTIKAN BARIS INI MENGGUNAKAN "inspectionReportJson"
+                const { inspectionReportJson } = request.payload;
 
-                if (!jenis_inspeksi || !catatan_lapangan) {
-                    return h.response({ status: 'gagal', pesan: 'Request body harus menyertakan "jenis_inspeksi" dan "catatan_lapangan".' }).code(400);
+                if (!inspectionReportJson) {
+                    // Pesan error ini sekarang dalam Bahasa Inggris
+                    return h.response({ status: 'failure', message: 'Request body must include "inspectionReportJson".' }).code(400);
                 }
-                console.log(`Menerima permintaan untuk laporan [${jenis_inspeksi}]`);
 
-                // 2. SELEKSI KONTEKS DINAMIS (MEMBACA FILE PENGETAHUAN)
-                const direktoriPengetahuan = 'data-pengetahuan-k3';
-                const namaFilePengetahuan = `${jenis_inspeksi}.txt`;
-                const pathFile = path.join(__dirname, direktoriPengetahuan, namaFilePengetahuan);
+                const promptFileName = 'elevator.txt';
+                const promptFilePath = path.join(__dirname, 'k3_knowledge', promptFileName);
                 
-                let konteksSpesifik = '';
+                let promptTemplate = '';
                 try {
-                    konteksSpesifik = await fs.readFile(pathFile, 'utf8');
-                    console.log(`Berhasil memuat "Buku Aturan" dari: ${namaFilePengetahuan}`);
+                    promptTemplate = await fs.readFile(promptFilePath, 'utf8');
+                    console.log(`Successfully loaded prompt template from: ${promptFileName}`);
                 } catch (fileError) {
-                    console.error(`Gagal memuat file pengetahuan untuk: ${jenis_inspeksi}. Pastikan file ada di folder yang benar.`);
-                    return h.response({ status: 'gagal', pesan: `Jenis inspeksi "${jenis_inspeksi}" tidak valid atau file pengetahuannya tidak ditemukan.` }).code(400);
+                    console.error(`Failed to load prompt file: ${promptFileName}.`);
+                    return h.response({ status: 'failure', message: `Prompt template "${promptFileName}" not found.` }).code(500);
                 }
 
-                // 3. PERAKITAN PROMPT FINAL YANG CERDAS
-                // Ini adalah "otak" dari sistem kita, tempat kita menggabungkan semua informasi.
-                const promptFinal = `
-                    PERAN: Anda adalah seorang Insinyur K3 senior yang sangat teliti dan berpengalaman.
-                    TUGAS: Buat laporan inspeksi teknis berdasarkan "Catatan Lapangan" dari teknisi dan "Buku Aturan" yang saya berikan.
-                    OUTPUT: Anda HARUS menghasilkan respons dalam format JSON yang valid tanpa tambahan teks lain.
+                const reportDataString = typeof inspectionReportJson === 'string' 
+                    ? inspectionReportJson 
+                    : JSON.stringify(inspectionReportJson, null, 2);
 
-                    --- BUKU ATURAN & MATRIKS KEPUTUSAN (Konteks Anda) ---
-                    ${konteksSpesifik}
-                    ------------------------------------------------------
-
-                    --- CATATAN LAPANGAN (Data yang perlu dianalisis) ---
-                    ${catatan_lapangan}
-                    ---------------------------------------------------------
-
-                    INSTRUKSI FINAL:
-                    1. Analisis setiap poin dalam "Catatan Lapangan".
-                    2. Bandingkan setiap poin dengan "Buku Aturan" untuk menentukan tingkat risiko dan rekomendasi yang sesuai.
-                    3. Buatlah "ringkasan_inspeksi" yang mencerminkan kondisi keseluruhan.
-                    4. Isi "temuan_kritis" hanya dengan masalah yang ditemukan. Jika tidak ada masalah, biarkan array ini kosong.
-                    5. Isi "rekomendasi_tindakan" dengan saran konkret berdasarkan temuan.
-                    6. Hasilkan JSON dengan struktur persis seperti ini:
-                    {
-                      "ringkasan_inspeksi": "...",
-                      "temuan_kritis": [
-                        { "poin_temuan": "...", "tingkat_risiko": "Tinggi/Sedang/Rendah/Kritis" }
-                      ],
-                      "rekomendasi_tindakan": [
-                        "..."
-                      ]
-                    }
-                `;
-
-                // 4. PANGGIL GEMINI API DAN PARSING HASIL
-                console.log('Mengirim prompt final ke Gemini...');
-                const result = await model.generateContent(promptFinal);
-                const responseFromAI = await result.response;
-                let text = responseFromAI.text().replace(/```json/g, '').replace(/```/g, '').trim();
+                const finalPrompt = promptTemplate.replace('### **[DATA_LAPORAN_JSON]:**', `### **[DATA_LAPORAN_JSON]:**\n${reportDataString}`);
                 
-                const laporanJSON = JSON.parse(text);
-                console.log('Berhasil menerima dan mem-parsing laporan terstruktur dari Gemini.');
+                console.log('Sending final prompt to Gemini...');
+                const result = await model.generateContent(finalPrompt);
+                const aiResponse = await result.response;
+                const reportText = aiResponse.text();
+                
+                console.log('Successfully received text report from Gemini.');
 
-                return h.response({ status: 'sukses', laporan: laporanJSON }).code(200);
+                return h.response({ status: 'success', generated_report: reportText }).code(200);
 
             } catch (error) {
-                console.error('Terjadi kesalahan fatal:', error);
-                return h.response({ status: 'gagal', pesan: 'Terjadi kesalahan internal pada server. Mungkin output dari AI bukan JSON yang valid.' }).code(500);
+                console.error('A fatal error occurred:', error);
+                return h.response({ status: 'failure', message: 'An internal server error occurred.', detail: error.message }).code(500);
             }
         }
     });
 
     await server.start();
-    console.log(`✅ Server Hapi berjalan di: ${server.info.uri}`);
-    console.log(`   Endpoint Generator Laporan: POST ${server.info.uri}/generate-laporan-inspeksi`);
+    console.log(`✅ Hapi server running at: ${server.info.uri}`);
+    console.log(`   Report Generator Endpoint: POST ${server.info.uri}/generate-inspection-report`);
 };
 
 process.on('unhandledRejection', (err) => {
-    console.log(err); process.exit(1);
+    console.error(err);
+    process.exit(1);
 });
 
 init();
