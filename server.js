@@ -12,7 +12,7 @@ if (!apiKey) {
     throw new Error("GEMINI_API_KEY not found in .env file");
 }
 const genAI = new GoogleGenerativeAI(apiKey);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
 const init = async () => {
     const server = Hapi.server({
@@ -25,15 +25,17 @@ const init = async () => {
         path: '/generate-inspection-report',
         handler: async (request, h) => {
             try {
-                // PASTIKAN BARIS INI MENGGUNAKAN "inspectionReportJson"
-                const { inspectionReportJson } = request.payload;
+                // KEY CHANGE 1: Menerima 'inspectionType' dan 'inspectionReportJson' dari payload
+                const { inspectionType, inspectionReportJson } = request.payload;
 
-                if (!inspectionReportJson) {
-                    // Pesan error ini sekarang dalam Bahasa Inggris
-                    return h.response({ status: 'failure', message: 'Request body must include "inspectionReportJson".' }).code(400);
+                // KEY CHANGE 2: Validasi input baru, pastikan keduanya ada
+                if (!inspectionType || !inspectionReportJson) {
+                    return h.response({ status: 'failure', message: 'Request body must include "inspectionType" and "inspectionReportJson".' }).code(400);
                 }
 
-                const promptFileName = 'elevator.txt';
+                // KEY CHANGE 3: Nama file dibuat dinamis berdasarkan inspectionType
+                // Contoh: inspectionType "elevator" akan menjadi "elevator.txt"
+                const promptFileName = `${inspectionType}.txt`;
                 const promptFilePath = path.join(__dirname, 'k3_knowledge', promptFileName);
                 
                 let promptTemplate = '';
@@ -42,13 +44,12 @@ const init = async () => {
                     console.log(`Successfully loaded prompt template from: ${promptFileName}`);
                 } catch (fileError) {
                     console.error(`Failed to load prompt file: ${promptFileName}.`);
-                    return h.response({ status: 'failure', message: `Prompt template "${promptFileName}" not found.` }).code(500);
+                    // Memberikan pesan error yang jelas jika file untuk tipe inspeksi itu tidak ada
+                    return h.response({ status: 'failure', message: `Prompt template for "${inspectionType}" not found at ${promptFileName}.` }).code(404);
                 }
 
-                const reportDataString = typeof inspectionReportJson === 'string' 
-                    ? inspectionReportJson 
-                    : JSON.stringify(inspectionReportJson, null, 2);
-
+                // Proses selanjutnya sama, tidak ada perubahan
+                const reportDataString = JSON.stringify(inspectionReportJson, null, 2);
                 const finalPrompt = promptTemplate.replace('### **[DATA_LAPORAN_JSON]:**', `### **[DATA_LAPORAN_JSON]:**\n${reportDataString}`);
                 
                 console.log('Sending final prompt to Gemini...');
@@ -56,7 +57,7 @@ const init = async () => {
                 const aiResponse = await result.response;
                 const reportText = aiResponse.text();
                 
-                console.log('Successfully received text report from Gemini.');
+                console.log(`Successfully generated report for inspection type: ${inspectionType}`);
 
                 return h.response({ status: 'success', generated_report: reportText }).code(200);
 
