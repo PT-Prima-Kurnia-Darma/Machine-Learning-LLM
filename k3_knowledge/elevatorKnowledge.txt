@@ -208,4 +208,3 @@ Berikut adalah daftar temuan dan tindakan perbaikan wajib.
 ===========================================================================================
 CATATAN PENTING:
 Setelah semua perbaikan selesai, **wajib dilakukan pemeriksaan dan pengujian ulang** oleh Ahli K3 yang berwenang sebelum unit diizinkan kembali beroperasi.
-=
