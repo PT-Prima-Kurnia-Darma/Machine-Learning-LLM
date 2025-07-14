@@ -11,11 +11,13 @@ require('dotenv').config();
 
 // Constants
 const KNOWLEDGE_DIR = path.join(__dirname, 'k3_knowledge');
-const BACKEND_API_URL = process.env.BACKEND_API_URL;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+// URL is now cleaner, using a stable model and without the API key
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent`;
+
 
 // Find and read the relevant knowledge file based on equipment type.
 async function getKnowledgePrompt(equipmentType) {
-  // Use first word, lowercase, to match the knowledge filename.
   const equipmentKey = equipmentType.split(' ')[0].toLowerCase();
   const filePath = path.join(KNOWLEDGE_DIR, `${equipmentKey}Knowledge.txt`);
 
@@ -32,14 +34,11 @@ async function getKnowledgePrompt(equipmentType) {
 function summarizeInspectionFindings(inspectionDataObject) {
   let findings = [];
 
-  // Recursive function to traverse the nested findings object.
   function traverse(obj, path) {
     for (const key in obj) {
       const currentPath = path ? `${path} -> ${key}` : key;
       if (typeof obj[key] === 'object' && obj[key] !== null) {
-        // Check if it's a result object (has 'result' and 'status' properties).
         if ('result' in obj[key] && 'status' in obj[key]) {
-          // Only record the finding if status is false.
           if (obj[key].status === false) {
             findings.push(`- ${currentPath.replace(/result$/i, '')}: ${obj[key].result}`);
           }
@@ -104,43 +103,63 @@ const init = async () => {
     method: 'POST',
     path: '/LLM-generate',
     handler: async (request, h) => {
+      if (!GEMINI_API_KEY) {
+          return h.response({ message: 'GEMINI_API_KEY is not configured in .env file.' }).code(500);
+      }
       try {
-        // 1. Receive the full inspection data from the request payload.
         const inspectionInput = request.payload;
-
-        // 2. Extract key info and get the relevant knowledge prompt.
         const equipmentType = inspectionInput.equipmentType;
         const regulations = await getKnowledgePrompt(equipmentType);
         const findingsSummary = summarizeInspectionFindings(inspectionInput.inspectionAndTesting);
-
-        // 3. Construct the final prompt for the LLM.
         const finalPrompt = createFinalPrompt(regulations, findingsSummary, inspectionInput.generalData);
-        console.log('--- FINAL PROMPT SENT TO BACKEND ---');
-        console.log(finalPrompt);
-        console.log('------------------------------------');
-
-        // 4. Call the Backend API (which in turn calls the Gemini API).
-        const responseFromBackend = await axios.post(BACKEND_API_URL, {
-          prompt: finalPrompt,
-        });
         
-        // 5. Process the response from the backend.
-        // The backend API returns { "text": "..." }, where 'text' is a JSON string.
-        const llmResultString = responseFromBackend.data.text;
-        console.log('--- RAW STRING RECEIVED FROM BACKEND ---');
+        console.log('--- FINAL PROMPT SENT TO GOOGLE ---');
+        console.log(finalPrompt);
+        console.log('-----------------------------------');
+        
+        // Call the Google Gemini API with the API key in the header.
+        const responseFromGemini = await axios.post(
+          GEMINI_API_URL, 
+          { // Request Body
+            "contents": [
+              {
+                "parts": [
+                  {
+                    "text": finalPrompt
+                  }
+                ]
+              }
+            ]
+          },
+          { // Axios config object with headers
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': GEMINI_API_KEY
+            }
+          }
+        );
+
+        let llmResultString = responseFromGemini.data.candidates[0].content.parts[0].text;
+        console.log('--- RAW STRING RECEIVED FROM GOOGLE ---');
         console.log(llmResultString);
-        console.log('----------------------------------------');
+        console.log('---------------------------------------');
+        
+        // More robust cleaning: find the first '{' and the last '}' and extract the content.
+        const startIndex = llmResultString.indexOf('{');
+        const endIndex = llmResultString.lastIndexOf('}');
 
-        // Parse the JSON string into a JavaScript object.
-        const llmResultObject = JSON.parse(llmResultString);
-
-        // 6. Return the final parsed object as the response.
-        return h.response(llmResultObject).code(200);
+        if (startIndex > -1 && endIndex > -1) {
+          const jsonSubstring = llmResultString.substring(startIndex, endIndex + 1);
+          const llmResultObject = JSON.parse(jsonSubstring);
+          return h.response(llmResultObject).code(200);
+        } else {
+          throw new Error("No valid JSON object found in the LLM response.");
+        }
 
       } catch (error) {
         console.error('Error in server handler:', error.message);
         if (error.response) {
-            console.error('Error data from backend:', error.response.data);
+            console.error('Error data from Google API:', error.response.data.error);
         }
         return h.response({ message: 'Internal Server Error', error: error.message }).code(500);
       }
