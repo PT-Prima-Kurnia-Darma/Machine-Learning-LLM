@@ -101,7 +101,6 @@ Provide the answer ONLY in the following JSON format, without any extra words or
  * Initializes and starts the Hapi server.
  */
 const init = async () => {
-    // Initialize Hapi Server
     const server = Hapi.server({ port: 3000, host: 'localhost' });
 
     server.route({
@@ -133,7 +132,7 @@ const init = async () => {
                 console.log(rawText);
                 console.log('------------------------------------');
                 
-                // --- NEW ROBUST JSON EXTRACTION LOGIC ---
+                // --- PERBAIKAN FINAL DI SINI ---
                 // Find the start and end of the JSON object
                 const startIndex = rawText.indexOf('{');
                 const endIndex = rawText.lastIndexOf('}');
@@ -145,10 +144,9 @@ const init = async () => {
                 // Extract only the JSON part
                 const jsonString = rawText.substring(startIndex, endIndex + 1);
                 
-                // Clean newlines inside the extracted string before parsing
-                const cleanedJsonString = jsonString.replace(/\n/g, '\\n');
+                // Langsung parse string yang sudah diekstrak, tanpa cleaning.
+                const llmResultObject = JSON.parse(jsonString);
                 
-                const llmResultObject = JSON.parse(cleanedJsonString);
                 return h.response(llmResultObject).code(200);
 
             } catch (error) {
@@ -169,11 +167,9 @@ const init = async () => {
     console.log('Server running on %s', server.info.uri);
 };
 
-// Gracefully handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
     console.error('An unhandled promise rejection occurred:', err);
     process.exit(1);
 });
 
-// Start the server
 init();
