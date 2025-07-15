@@ -20,13 +20,11 @@ const vertex_ai = new VertexAI({ project, location });
 // Initialize the Generative Model with configuration
 const generativeModel = vertex_ai.getGenerativeModel({
     model,
-    // --- PENYESUAIAN DI SINI ---
-    // Melonggarkan filter untuk mengizinkan konten yang tidak terlalu berisiko.
     safetySettings: [{ 
         category: 'HARM_CATEGORY_DANGEROUS_CONTENT', 
         threshold: 'BLOCK_ONLY_HIGH' 
     }],
-    generationConfig: { maxOutputTokens: 20000, temperature: 0.1, responseMimeType: 'application/json' },
+    generationConfig: { maxOutputTokens: 8192, temperature: 0.1, responseMimeType: 'application/json' },
 });
 
 // --- Constants ---
@@ -131,14 +129,26 @@ const init = async () => {
                 
                 const rawText = response.candidates[0].content.parts[0].text;
 
-                // Log the raw text for debugging purposes
                 console.log('--- Raw text from AI before parsing ---');
                 console.log(rawText);
                 console.log('------------------------------------');
                 
-                const cleanedText = rawText.replace(/\n/g, '\\n');
+                // --- NEW ROBUST JSON EXTRACTION LOGIC ---
+                // Find the start and end of the JSON object
+                const startIndex = rawText.indexOf('{');
+                const endIndex = rawText.lastIndexOf('}');
                 
-                const llmResultObject = JSON.parse(cleanedText);
+                if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
+                    throw new Error('Could not find a valid JSON object in the AI response.');
+                }
+
+                // Extract only the JSON part
+                const jsonString = rawText.substring(startIndex, endIndex + 1);
+                
+                // Clean newlines inside the extracted string before parsing
+                const cleanedJsonString = jsonString.replace(/\n/g, '\\n');
+                
+                const llmResultObject = JSON.parse(cleanedJsonString);
                 return h.response(llmResultObject).code(200);
 
             } catch (error) {
