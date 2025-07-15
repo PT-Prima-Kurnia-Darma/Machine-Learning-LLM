@@ -4,33 +4,30 @@
 const Hapi = require('@hapi/hapi');
 const fs = require('fs/promises');
 const path = require('path');
-// Correct import for the latest @google-cloud/aiplatform library
-const { VertexAI } = require('@google-cloud/aiplatform');
+// --- NEW IMPORT METHOD ---
+// We now use the lower-level PredictionServiceClient
+const { PredictionServiceClient } = require('@google-cloud/aiplatform').v1;
 
 // Load environment variables from .env file
 require('dotenv').config();
 
-// --- Vertex AI Client Initialization ---
-// This block initializes the Vertex AI client for your project.
-// It will automatically use the credentials set up via `gcloud auth application-default login`.
-const vertexAI = new VertexAI({
-  project: process.env.GCP_PROJECT_ID || 'gen-lang-client-0697716223',
-  location: process.env.GCP_LOCATION || 'asia-southeast2',
-});
-const generativeModel = vertexAI.getGenerativeModel({
-  model: 'gemini-1.5-flash-001',
-});
+// --- NEW CLIENT INITIALIZATION ---
+// We specify the regional endpoint directly.
+const clientOptions = {
+  apiEndpoint: 'asia-southeast2-aiplatform.googleapis.com',
+};
+const predictionServiceClient = new PredictionServiceClient(clientOptions);
+
+// --- Project Configuration ---
+const project = process.env.GCP_PROJECT_ID || 'gen-lang-client-0697716223';
+const location = process.env.GCP_LOCATION || 'asia-southeast2';
+const model = 'gemini-1.5-flash-001';
 
 // --- Constants ---
 const KNOWLEDGE_DIR = path.join(__dirname, 'k3_knowledge');
 
-// --- Helper Functions ---
+// --- Helper Functions (No Changes) ---
 
-/**
- * Reads the relevant knowledge file based on equipment type.
- * @param {string} equipmentType
- * @returns {Promise<string>}
- */
 async function getKnowledgePrompt(equipmentType) {
   const equipmentKey = equipmentType.split(' ')[0].toLowerCase();
   const filePath = path.join(KNOWLEDGE_DIR, `${equipmentKey}Knowledge.txt`);
@@ -43,11 +40,6 @@ async function getKnowledgePrompt(equipmentType) {
   }
 }
 
-/**
- * Summarizes inspection findings, focusing only on items where status is false.
- * @param {object} inspectionDataObject
- * @returns {string}
- */
 function summarizeInspectionFindings(inspectionDataObject) {
   let findings = [];
   function traverse(obj, path) {
@@ -66,21 +58,12 @@ function summarizeInspectionFindings(inspectionDataObject) {
   }
   traverse(inspectionDataObject, '');
   if (findings.length === 0) {
-    // This part is for internal logic, the AI will generate the final user-facing text
     return 'All inspected items meet the standards and are in good condition.';
   }
   return 'Found several items that do not meet the standards:\n' + findings.join('\n');
 }
 
-/**
- * Creates the final, structured prompt to be sent to the LLM.
- * @param {string} regulations
- * @param {string} findingsSummary
- * @param {object} generalData
- * @returns {string}
- */
 function createFinalPrompt(regulations, findingsSummary, generalData) {
-  // --- Prompt updated to generate content in Indonesian ---
   return `
 You are a senior K3 inspection expert tasked with creating a final report in Indonesian.
 
@@ -116,9 +99,8 @@ Provide the answer ONLY in the following JSON format, without any extra words or
 `;
 }
 
-/**
- * Initializes and starts the Hapi server.
- */
+// --- Server Initialization ---
+
 const init = async () => {
   const server = Hapi.server({
     port: 3000,
@@ -140,14 +122,33 @@ const init = async () => {
         console.log(finalPrompt);
         console.log('--------------------------------------');
 
-        // Call the Vertex AI API
-        const req = {
-          contents: [{ role: 'user', parts: [{ text: finalPrompt }] }],
-        };
-        const result = await generativeModel.generateContent(req);
-        const response = result.response;
+        // --- NEW API CALL METHOD ---
+        // 1. Define the full endpoint path
+        const endpoint = `projects/${project}/locations/${location}/publishers/google/models/${model}`;
+        
+        // 2. Structure the request payload into an 'instances' array
+        const instances = [{ contents: [{ role: 'user', parts: [{ text: finalPrompt }] }] }];
 
-        let llmResultString = response.candidates[0].content.parts[0].text;
+        // 3. Define model parameters
+        const parameters = {
+            candidateCount: 1,
+            maxOutputTokens: 2048,
+            temperature: 0.5,
+        };
+
+        // 4. Build the final request object
+        const apiRequest = {
+            endpoint,
+            instances,
+            parameters,
+        };
+
+        // 5. Call the API using the predict method
+        const [response] = await predictionServiceClient.predict(apiRequest);
+        
+        // 6. Extract the result from a different response structure
+        let llmResultString = response.predictions[0].structValue.fields.content.stringValue;
+
         console.log('--- RAW STRING RECEIVED FROM VERTEX AI ---');
         console.log(llmResultString);
         console.log('------------------------------------------');
@@ -163,10 +164,7 @@ const init = async () => {
           throw new Error('No valid JSON object found in the LLM response.');
         }
       } catch (error) {
-        console.error('Error in server handler:', error.message);
-        if (error.response) {
-          console.error('Error data from API:', error.response.data);
-        }
+        console.error('Error in server handler:', error);
         return h.response({ message: 'Internal Server Error', error: error.message }).code(500);
       }
     },
