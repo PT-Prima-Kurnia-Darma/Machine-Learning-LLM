@@ -15,28 +15,25 @@ const location = process.env.GCP_LOCATION;
 const model = 'gemini-2.5-flash';
 
 // --- Initialize VertexAI Client ---
-// The library automatically finds credentials from the GOOGLE_APPLICATION_CREDENTIALS env variable.
 const vertex_ai = new VertexAI({ project, location });
 
 // Initialize the Generative Model with configuration
 const generativeModel = vertex_ai.getGenerativeModel({
     model,
-    safetySettings: [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }],
-    generationConfig: { maxOutputTokens: 2048, temperature: 0.5, responseMimeType: 'application/json' },
+    // --- PENYESUAIAN DI SINI ---
+    // Melonggarkan filter untuk mengizinkan konten yang tidak terlalu berisiko.
+    safetySettings: [{ 
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT', 
+        threshold: 'BLOCK_ONLY_HIGH' 
+    }],
+    generationConfig: { maxOutputTokens: 20000, temperature: 0.1, responseMimeType: 'application/json' },
 });
 
 // --- Constants ---
 const KNOWLEDGE_DIR = path.join(__dirname, 'k3_knowledge');
 
 // --- Helper Functions ---
-
-/**
- * REVERTED: Reads a specific knowledge base file based on equipment type.
- * @param {string} equipmentType
- * @returns {Promise<string>}
- */
 async function getKnowledgePrompt(equipmentType) {
-    // Extracts the first word (e.g., "Eskalator") to find the corresponding file.
     const equipmentKey = equipmentType.split(' ')[0].toLowerCase();
     const filePath = path.join(KNOWLEDGE_DIR, `${equipmentKey}Knowledge.txt`);
     console.log(`Attempting to load specific knowledge file: ${filePath}`);
@@ -47,11 +44,6 @@ async function getKnowledgePrompt(equipmentType) {
     }
 }
 
-/**
- * Traverses inspection data and summarizes items that failed.
- * @param {object} inspectionDataObject
- * @returns {string}
- */
 function summarizeInspectionFindings(inspectionDataObject) {
     let findings = [];
     function traverse(obj, path) {
@@ -73,13 +65,6 @@ function summarizeInspectionFindings(inspectionDataObject) {
     return 'Found several items that do not meet the standards:\n' + findings.join('\n');
 }
 
-/**
- * Creates the final prompt for the AI.
- * @param {string} regulations
- * @param {string} findingsSummary
- * @param {object} generalData
- * @returns {string}
- */
 function createFinalPrompt(regulations, findingsSummary, generalData) {
     return `
 You are a senior OHS (K3) inspection expert.
@@ -127,10 +112,7 @@ const init = async () => {
         handler: async (request, h) => {
             try {
                 const inspectionInput = request.payload;
-                
-                // RE-ADDED: Load only the relevant knowledge file for this request.
                 const regulations = await getKnowledgePrompt(inspectionInput.equipmentType);
-                
                 const findingsSummary = summarizeInspectionFindings(inspectionInput.inspectionAndTesting);
                 const finalPrompt = createFinalPrompt(regulations, findingsSummary, inspectionInput.generalData);
 
@@ -146,8 +128,17 @@ const init = async () => {
                     console.log('Full response from AI:', JSON.stringify(response, null, 2));
                     throw new Error('Response from AI was empty, blocked, or invalid.');
                 }
+                
+                const rawText = response.candidates[0].content.parts[0].text;
 
-                const llmResultObject = JSON.parse(response.candidates[0].content.parts[0].text);
+                // Log the raw text for debugging purposes
+                console.log('--- Raw text from AI before parsing ---');
+                console.log(rawText);
+                console.log('------------------------------------');
+                
+                const cleanedText = rawText.replace(/\n/g, '\\n');
+                
+                const llmResultObject = JSON.parse(cleanedText);
                 return h.response(llmResultObject).code(200);
 
             } catch (error) {
