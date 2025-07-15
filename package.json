@@ -1,18 +1,18 @@
 {
-  "dependencies": {
-    "@google/generative-ai": "^0.24.1",
-    "@hapi/hapi": "^21.4.0",
-    "axios": "^1.10.0",
-    "dotenv": "^16.6.1"
-  },
   "name": "geminiapi",
   "version": "1.0.0",
-  "main": "hapi-test-geminiAPI-server.js",
+  "description": "��#\u0000 \u0000M\u0000a\u0000c\u0000h\u0000i\u0000n\u0000e\u0000-\u0000L\u0000e\u0000a\u0000r\u0000n\u0000i\u0000n\u0000g\u0000-\u0000L\u0000L\u0000M\u0000 \u0000G\u0000e\u0000m\u0000i\u0000n\u0000i\u0000A\u0000P\u0000I\u0000\r\u0000 \u0000",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "dependencies": {
+    "@google-cloud/aiplatform": "^4.3.0",
+    "@hapi/hapi": "^21.4.0",
+    "dotenv": "^17.2.0"
+  }
 }
