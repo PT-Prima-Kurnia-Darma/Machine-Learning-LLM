@@ -66,6 +66,7 @@ function summarizeInspectionFindings(inspectionDataObject) {
   }
   traverse(inspectionDataObject, '');
   if (findings.length === 0) {
+    // This part is for internal logic, the AI will generate the final user-facing text
     return 'All inspected items meet the standards and are in good condition.';
   }
   return 'Found several items that do not meet the standards:\n' + findings.join('\n');
@@ -79,8 +80,9 @@ function summarizeInspectionFindings(inspectionDataObject) {
  * @returns {string}
  */
 function createFinalPrompt(regulations, findingsSummary, generalData) {
+  // --- Prompt updated to generate content in Indonesian ---
   return `
-You are a senior K3 inspection expert tasked with creating a final report.
+You are a senior K3 inspection expert tasked with creating a final report in Indonesian.
 
 **INSPECTION CONTEXT:**
 - Equipment Type: ${generalData.safetyObjectTypeAndNumber}
@@ -98,12 +100,12 @@ ${findingsSummary}
 ---
 
 **YOUR TASK:**
-Based on the comparison between **FIELD FINDINGS** and **REGULATIONS**, create a conclusion and recommendations.
-1.  **Conclusion**: Determine if the equipment is "LAIK" (Compliant) or "TIDAK LAIK" (Not Compliant). The "LAIK" status is only given if ALL findings meet the standard. If even one item fails, the status is "TIDAK LAIK".
-2.  **Recommendation**: Structure the recommendation string with the following rules:
-    * **If the conclusion is "TIDAK LAIK"**: The string MUST begin with the exact phrase "STOP OPERASIONAL" followed by a newline character (\\n). After that, list all necessary repair actions as a numbered list (1., 2., 3., ...), with each item on a new line.
-    * **If the conclusion is "LAIK"**: The string should only contain a recommendation for routine maintenance.
-    * **Example for "TIDAK LAIK" output**: "STOP OPERASIONAL\\n1. Lakukan perbaikan A.\\n2. Ganti komponen B."
+Based on the comparison between **FIELD FINDINGS** and **REGULATIONS**, create a conclusion and recommendations in **Indonesian**.
+1.  **Conclusion (Kesimpulan)**: Determine if the equipment is "LAIK" or "TIDAK LAIK". The "LAIK" status is only given if ALL findings meet the standard. If even one item fails, the status is "TIDAK LAIK".
+2.  **Recommendation (Rekomendasi)**: Structure the recommendation string with the following rules:
+    * **If the conclusion is "TIDAK LAIK"**: The string MUST begin with the exact phrase "STOP OPERASIONAL" followed by a newline character (\\n). After that, list all necessary repair actions as a numbered list. **Write all repair actions in Indonesian.**
+    * **If the conclusion is "LAIK"**: The string should contain a recommendation for routine maintenance, **written in Indonesian.** For example: "Seluruh komponen dalam kondisi baik dan laik operasi. Lakukan perawatan rutin sesuai jadwal."
+    * **Example for "TIDAK LAIK" output**: "STOP OPERASIONAL\\n1. Lakukan perbaikan pada komponen A yang rusak.\\n2. Ganti segera komponen B yang tidak standar."
 
 Provide the answer ONLY in the following JSON format, without any extra words or explanation. DO NOT add markdown \`\`\`json.
 
