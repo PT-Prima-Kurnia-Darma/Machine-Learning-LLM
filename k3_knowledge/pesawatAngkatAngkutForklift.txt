@@ -54,9 +54,9 @@ Ini adalah data hasil inspeksi spesifik untuk satu unit Forklift. Variabel di da
 ===========================================================================================
 
 ### Data Umum
--   **Nama Perusahaan:** `{generalData.owner.name}`
--   **Lokasi Unit:** `{generalData.unitLocation}`
--   **Tanggal Pemeriksaan:** `{inspector.reportDate}`
+-   **Nama Perusahaan:** `{ownerName}`
+-   **Lokasi Unit:** `{unitLocation}`
+-   **Tanggal Pemeriksaan:** `{inspectionDate}`
 
 ### Data Hasil Pemeriksaan & Pengujian
 -   **Rem:** Status: `{visualAndFunctionInspection.chassis.brakes.status}`, Hasil: `{visualAndFunctionInspection.chassis.brakes.notes}`
