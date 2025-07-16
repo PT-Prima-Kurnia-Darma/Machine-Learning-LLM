@@ -1,4 +1,3 @@
 .env
 /node_modules
 gemini-llm-vertexai-7ac893274345.json
-package-lock.json
