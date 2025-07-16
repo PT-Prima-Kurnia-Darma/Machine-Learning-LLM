@@ -13,8 +13,8 @@ require('dotenv').config();
 const project = process.env.GCP_PROJECT_ID;
 const location = process.env.GCP_LOCATION; // Should be 'asia-southeast1'
 const model = 'gemini-2.5-flash';
-9
-// --- Initialize VertexAI Client (Done once per instance lifecycle) ---
+
+// --- Initialize VertexAI Client ---
 const vertex_ai = new VertexAI({ project, location });
 
 const generativeModel = vertex_ai.getGenerativeModel({
@@ -26,50 +26,43 @@ const generativeModel = vertex_ai.getGenerativeModel({
     generationConfig: { maxOutputTokens: 8192, temperature: 0, responseMimeType: 'application/json' },
 });
 
-// --- In-Memory Cache for Knowledge Files ---
-const knowledgeCache = {};
-
 // --- Constants ---
 const KNOWLEDGE_DIR = path.join(__dirname, 'k3_knowledge');
 
 // --- Helper Functions ---
 
 /**
- * Loads all knowledge files from disk into the memory cache on server startup.
- * This is a one-time operation to maximize performance on subsequent requests.
+ * Finds and reads a knowledge file from disk based on the equipment type.
+ * This new logic SEARCHES for a file starting with the key, instead of guessing the full name.
  */
-async function loadAllKnowledge() {
-    console.log('🚀 Pre-loading all knowledge files into memory cache...');
-    try {
-        const files = await fs.readdir(KNOWLEDGE_DIR);
-        for (const file of files) {
-            if (path.extname(file) === '.txt') {
-                const equipmentKey = path.basename(file, 'Knowledge.txt').toLowerCase();
-                const filePath = path.join(KNOWLEDGE_DIR, file);
-                const content = await fs.readFile(filePath, 'utf-8');
-                knowledgeCache[equipmentKey] = content;
-                console.log(`- Cached: ${equipmentKey}`);
-            }
-        }
-        console.log('✅ Knowledge cache successfully loaded.');
-    } catch (error) {
-        console.error('❌ FATAL: Failed to load knowledge base. The server will stop.', error);
-        process.exit(1); // Exit if critical data can't be loaded.
-    }
-}
-
-/**
- * Gets knowledge instantly from the in-memory cache.
- * This function is synchronous and extremely fast.
- */
-function getKnowledgePrompt(equipmentType) {
+async function getKnowledgeFromFile(equipmentType) {
     const equipmentKey = equipmentType.split(' ')[0].toLowerCase();
-    
-    const knowledge = knowledgeCache[equipmentKey];
-    if (!knowledge) {
-        throw new Error(`Knowledge base not found in cache for: ${equipmentType}. Searched key: ${equipmentKey}`);
+    console.log(`🔍 Searching for knowledge file with key: '${equipmentKey}'`);
+
+    try {
+        const allFiles = await fs.readdir(KNOWLEDGE_DIR);
+
+        // Find the first file in the directory that starts with our key (case-insensitive)
+        const matchingFile = allFiles.find(file => 
+            file.toLowerCase().startsWith(equipmentKey) && path.extname(file).toLowerCase() === '.txt'
+        );
+
+        if (!matchingFile) {
+            // If no file matches, throw a clear error.
+            throw new Error(`Knowledge base not found for: ${equipmentType}. No file found starting with key: '${equipmentKey}'`);
+        }
+
+        const filePath = path.join(KNOWLEDGE_DIR, matchingFile);
+        console.log(`✅ Found matching file. Reading: ${filePath}`);
+        
+        const content = await fs.readFile(filePath, 'utf-8');
+        return content;
+
+    } catch (error) {
+        // Re-throw the error to be caught by the main handler
+        console.error("Error inside getKnowledgeFromFile:", error.message);
+        throw error;
     }
-    return knowledge;
 }
 
 /**
@@ -139,9 +132,6 @@ Provide the answer ONLY in the following JSON format, without any extra words or
  * Initializes and starts the Hapi server.
  */
 const init = async () => {
-    // This new step loads all knowledge before the server starts listening for requests.
-    await loadAllKnowledge();
-
     const server = Hapi.server({ port: process.env.PORT || 3000, host: '0.0.0.0' });
 
     server.route({
@@ -150,8 +140,7 @@ const init = async () => {
         handler: async (request, h) => {
             try {
                 const inspectionInput = request.payload;
-                // This call is now instantaneous as it reads from memory.
-                const regulations = getKnowledgePrompt(inspectionInput.equipmentType);
+                const regulations = await getKnowledgeFromFile(inspectionInput.equipmentType);
                 const findingsSummary = summarizeInspectionFindings(inspectionInput.inspectionAndTesting);
                 const finalPrompt = createFinalPrompt(regulations, findingsSummary, inspectionInput.generalData);
                 const result = await generativeModel.generateContent(finalPrompt);
@@ -184,7 +173,7 @@ const init = async () => {
     });
 
     await server.start();
-    console.log(`Server running on ${server.info.uri}`);
+    console.log(`✅ Server running on ${server.info.uri}`);
     console.log(`Using Project: ${project} in Region: ${location}`);
     console.log(`Using Model: ${model}`);
 };
@@ -192,8 +181,6 @@ const init = async () => {
 // Graceful shutdown logic
 process.on('SIGINT', async () => {
     console.log('Stopping server...');
-    // server.stop is not available in Hapi, so we just exit.
-    // In a real production app with database connections, you would close them here.
     process.exit(0);
 });
 
