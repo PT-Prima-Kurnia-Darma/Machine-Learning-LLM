@@ -13,7 +13,7 @@ require('dotenv').config();
 const project = process.env.GCP_PROJECT_ID;
 const location = process.env.GCP_LOCATION; // Should be 'asia-southeast1'
 const model = 'gemini-2.5-flash';
-
+9
 // --- Initialize VertexAI Client (Done once per instance lifecycle) ---
 const vertex_ai = new VertexAI({ project, location });
 
