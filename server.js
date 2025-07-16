@@ -24,7 +24,7 @@ const generativeModel = vertex_ai.getGenerativeModel({
         category: 'HARM_CATEGORY_DANGEROUS_CONTENT', 
         threshold: 'BLOCK_ONLY_HIGH' 
     }],
-    generationConfig: { maxOutputTokens: 5000, temperature: 0, responseMimeType: 'application/json' },
+    generationConfig: { maxOutputTokens: 10000, temperature: 0, responseMimeType: 'application/json' },
 });
 
 // --- Constants ---
