@@ -11,37 +11,71 @@ require('dotenv').config();
 
 // --- Project & Model Configuration ---
 const project = process.env.GCP_PROJECT_ID;
-const location = process.env.GCP_LOCATION;
+const location = process.env.GCP_LOCATION; // Should be 'asia-southeast1'
 const model = 'gemini-2.5-flash';
 
-// --- Initialize VertexAI Client ---
+// --- Initialize VertexAI Client (Done once per instance lifecycle) ---
 const vertex_ai = new VertexAI({ project, location });
 
-// Initialize the Generative Model with configuration
 const generativeModel = vertex_ai.getGenerativeModel({
     model,
     safetySettings: [{ 
         category: 'HARM_CATEGORY_DANGEROUS_CONTENT', 
         threshold: 'BLOCK_ONLY_HIGH' 
     }],
-    generationConfig: { maxOutputTokens: 10000, temperature: 0, responseMimeType: 'application/json' },
+    generationConfig: { maxOutputTokens: 8192, temperature: 0, responseMimeType: 'application/json' },
 });
+
+// --- In-Memory Cache for Knowledge Files ---
+const knowledgeCache = {};
 
 // --- Constants ---
 const KNOWLEDGE_DIR = path.join(__dirname, 'k3_knowledge');
 
 // --- Helper Functions ---
-async function getKnowledgePrompt(equipmentType) {
-    const equipmentKey = equipmentType.split(' ')[0].toLowerCase();
-    const filePath = path.join(KNOWLEDGE_DIR, `${equipmentKey}Knowledge.txt`);
-    console.log(`Attempting to load specific knowledge file: ${filePath}`);
+
+/**
+ * Loads all knowledge files from disk into the memory cache on server startup.
+ * This is a one-time operation to maximize performance on subsequent requests.
+ */
+async function loadAllKnowledge() {
+    console.log('🚀 Pre-loading all knowledge files into memory cache...');
     try {
-        return await fs.readFile(filePath, 'utf-8');
+        const files = await fs.readdir(KNOWLEDGE_DIR);
+        for (const file of files) {
+            if (path.extname(file) === '.txt') {
+                const equipmentKey = path.basename(file, 'Knowledge.txt').toLowerCase();
+                const filePath = path.join(KNOWLEDGE_DIR, file);
+                const content = await fs.readFile(filePath, 'utf-8');
+                knowledgeCache[equipmentKey] = content;
+                console.log(`- Cached: ${equipmentKey}`);
+            }
+        }
+        console.log('✅ Knowledge cache successfully loaded.');
     } catch (error) {
-        throw new Error(`Knowledge base file not found for: ${equipmentType}. Expected file at: ${filePath}`);
+        console.error('❌ FATAL: Failed to load knowledge base. The server will stop.', error);
+        process.exit(1); // Exit if critical data can't be loaded.
     }
 }
 
+/**
+ * Gets knowledge instantly from the in-memory cache.
+ * This function is synchronous and extremely fast.
+ */
+function getKnowledgePrompt(equipmentType) {
+    const equipmentKey = equipmentType.split(' ')[0].toLowerCase();
+    
+    const knowledge = knowledgeCache[equipmentKey];
+    if (!knowledge) {
+        throw new Error(`Knowledge base not found in cache for: ${equipmentType}. Searched key: ${equipmentKey}`);
+    }
+    return knowledge;
+}
+
+/**
+ * Summarizes inspection findings from the input data object.
+ * (Your original logic, unchanged)
+ */
 function summarizeInspectionFindings(inspectionDataObject) {
     let findings = [];
     function traverse(obj, path) {
@@ -63,6 +97,10 @@ function summarizeInspectionFindings(inspectionDataObject) {
     return 'Found several items that do not meet the standards:\n' + findings.join('\n');
 }
 
+/**
+ * Creates the final, detailed prompt to be sent to the AI.
+ * (Your original logic, unchanged)
+ */
 function createFinalPrompt(regulations, findingsSummary, generalData) {
     return `
 You are a senior OHS (K3) inspection expert.
@@ -101,7 +139,10 @@ Provide the answer ONLY in the following JSON format, without any extra words or
  * Initializes and starts the Hapi server.
  */
 const init = async () => {
-    const server = Hapi.server({ port: 3000, host: 'localhost' });
+    // This new step loads all knowledge before the server starts listening for requests.
+    await loadAllKnowledge();
+
+    const server = Hapi.server({ port: process.env.PORT || 3000, host: '0.0.0.0' });
 
     server.route({
         method: 'POST',
@@ -109,63 +150,52 @@ const init = async () => {
         handler: async (request, h) => {
             try {
                 const inspectionInput = request.payload;
-                const regulations = await getKnowledgePrompt(inspectionInput.equipmentType);
+                // This call is now instantaneous as it reads from memory.
+                const regulations = getKnowledgePrompt(inspectionInput.equipmentType);
                 const findingsSummary = summarizeInspectionFindings(inspectionInput.inspectionAndTesting);
                 const finalPrompt = createFinalPrompt(regulations, findingsSummary, inspectionInput.generalData);
-
                 const result = await generativeModel.generateContent(finalPrompt);
                 const response = result.response;
 
-                if (
-                    !response.candidates || response.candidates.length === 0 ||
-                    !response.candidates[0].content || !response.candidates[0].content.parts ||
-                    response.candidates[0].content.parts.length === 0
-                ) {
-                    console.error('Invalid or blocked response from AI.');
-                    console.log('Full response from AI:', JSON.stringify(response, null, 2));
+                if (!response.candidates || response.candidates.length === 0 || !response.candidates[0].content || !response.candidates[0].content.parts || response.candidates[0].content.parts.length === 0 ) {
+                    console.error('Invalid or blocked response from AI:', JSON.stringify(response, null, 2));
                     throw new Error('Response from AI was empty, blocked, or invalid.');
                 }
                 
                 const rawText = response.candidates[0].content.parts[0].text;
-
-                console.log('--- Raw text from AI before parsing ---');
-                console.log(rawText);
-                console.log('------------------------------------');
-                
-                // --- PERBAIKAN FINAL DI SINI ---
-                // Find the start and end of the JSON object
                 const startIndex = rawText.indexOf('{');
                 const endIndex = rawText.lastIndexOf('}');
                 
                 if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
                     throw new Error('Could not find a valid JSON object in the AI response.');
                 }
-
-                // Extract only the JSON part
                 const jsonString = rawText.substring(startIndex, endIndex + 1);
-                
-                // Langsung parse string yang sudah diekstrak, tanpa cleaning.
                 const llmResultObject = JSON.parse(jsonString);
                 
                 return h.response(llmResultObject).code(200);
-
             } catch (error) {
                 console.error('Error in server handler:', error);
                 return h.response({
-                    message: 'Internal Server Error when calling Vertex AI.',
+                    message: 'Internal Server Error.',
                     error: error.message,
-                    details: error.details || 'No additional details.'
                 }).code(500);
             }
         },
     });
 
     await server.start();
-    console.log(`Using Project: ${project}`);
-    console.log(`Contacting Location/Region: ${location}`);
+    console.log(`Server running on ${server.info.uri}`);
+    console.log(`Using Project: ${project} in Region: ${location}`);
     console.log(`Using Model: ${model}`);
-    console.log('Server running on %s', server.info.uri);
 };
+
+// Graceful shutdown logic
+process.on('SIGINT', async () => {
+    console.log('Stopping server...');
+    // server.stop is not available in Hapi, so we just exit.
+    // In a real production app with database connections, you would close them here.
+    process.exit(0);
+});
 
 process.on('unhandledRejection', (err) => {
     console.error('An unhandled promise rejection occurred:', err);
