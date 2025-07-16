@@ -142,7 +142,7 @@ const init = async () => {
     // This new step loads all knowledge before the server starts listening for requests.
     await loadAllKnowledge();
 
-    const server = Hapi.server({ port: process.env.PORT || 3000, host: '0.0.0.0' });
+    const server = Hapi.server({ port: process.env.PORT || 3000, host: 'localhost' });
 
     server.route({
         method: 'POST',
