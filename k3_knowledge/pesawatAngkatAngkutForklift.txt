@@ -53,18 +53,30 @@ Regulasi acuan utama: Peraturan Menteri Ketenagakerjaan No. 8 Tahun 2020 tentang
 Ini adalah data hasil inspeksi spesifik untuk satu unit Forklift. Variabel di dalam `{...}` diisi dari file JSON.
 ===========================================================================================
 
+Tentu, setelah mencocokkan variabel dari data laporan dengan struktur file JSON yang Anda berikan, ditemukan banyak ketidaksesuaian pada nama variabel.
+
+Berikut adalah perbaikan data laporan variabel agar sesuai dengan struktur JSON yang benar.
+
+***
+
+### Data Laporan Variabel (Perbaikan)
+
+Ini adalah data hasil inspeksi spesifik untuk satu unit Forklift. Variabel di dalam `{...}` diisi dari file JSON.
+
+===========================================================================================
+
 ### Data Umum
--   **Nama Perusahaan:** `{ownerName}`
--   **Lokasi Unit:** `{unitLocation}`
--   **Tanggal Pemeriksaan:** `{inspectionDate}`
+- Nama Perusahaan: `{generalData.ownerName}`
+- Lokasi Unit: `{generalData.unitLocation}`
+- Tanggal Pemeriksaan: `{inspectionDate}`
 
 ### Data Hasil Pemeriksaan & Pengujian
--   **Rem:** Status: `{visualAndFunctionInspection.chassis.brakes.status}`, Hasil: `{visualAndFunctionInspection.chassis.brakes.notes}`
--   **Alat Peringatan:** Status: `{visualAndFunctionInspection.chassis.warningDevices.status}`, Hasil: `{visualAndFunctionInspection.chassis.warningDevices.notes}`
--   **Struktur Pelindung:** Status: `{visualAndFunctionInspection.chassis.operatorCabin.status}`, Hasil: `{visualAndFunctionInspection.chassis.operatorCabin.notes}`
--   **Garpu & Rantai:** Status: `{visualAndFunctionInspection.attachment.fork.status}`, Hasil: `NDT: {nonDestructiveTest.results}`
--   **Sistem Hidrolik:** Status: `{visualAndFunctionInspection.hydraulicComponents.status}`, Hasil: `{visualAndFunctionInspection.hydraulicComponents.notes}`
--   **Ban:** Status: `{visualAndFunctionInspection.chassis.tires.status}`, Hasil: `{visualAndFunctionInspection.chassis.tires.notes}`
+- Rem: Status: `{inspectionAndTesting.powerTrain.brakesMainResult.status}`, Hasil: `{inspectionAndTesting.powerTrain.brakesMainResult.result}`
+- Alat Peringatan: Status: `{inspectionAndTesting.engineOnChecks.hornAlarmResult.status}`, Hasil: `{inspectionAndTesting.engineOnChecks.hornAlarmResult.result}` *(Catatan: Mengambil data dari alarm mundur)*
+- Struktur Pelindung: Status: `{inspectionAndTesting.mainFrameAndChassis.reinforcingFrameCracksResult.status}`, Hasil: `{inspectionAndTesting.mainFrameAndChassis.reinforcingFrameCracksResult.result}` *(Catatan: Mengambil data dari pemeriksaan keretakan rangka)*
+- Garpu & Rantai: Status: `Lihat Hasil NDT`, Hasil: `NDT: {testingForklift.nonDestructiveTesting.results[1].result} pada {testingForklift.nonDestructiveTesting.results[1].inspectedPart}`
+- Sistem Hidrolik: Status: `{inspectionAndTesting.hydraulicComponents.tankOilConditionResult.status}`, Hasil: `{inspectionAndTesting.hydraulicComponents.tankOilConditionResult.result}`
+- Ban: Status: `{inspectionAndTesting.powerTrain.wheelsBoltsResult.status}`, Hasil: `Baut Roda: {inspectionAndTesting.powerTrain.wheelsBoltsResult.result}, Tapak Depan: {inspectionAndTesting.powerTrain.wheelsFrontResult.result}`
 
 ===========================================================================================
 ## FORMAT OUTPUT DAN SKENARIO (PILIH SALAH SATU)
