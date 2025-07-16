@@ -54,17 +54,17 @@ Ini adalah data hasil inspeksi spesifik untuk satu unit Mobile Crane. Variabel d
 ===========================================================================================
 
 ### Data Umum
--   **Nama Perusahaan:** `{generalData.owner.name}`
--   **Lokasi Unit:** `{generalData.unitLocation}`
--   **Tanggal Pemeriksaan:** `{inspector.reportDate}`
+- Nama Perusahaan: {generalData.generalDataOwnerName}
+- Lokasi Unit: {generalData.generalDataUnitLocation}
+- Tanggal Pemeriksaan: {generalData.generalDataInspectionDate}
 
 ### Data Hasil Pemeriksaan & Pengujian
--   **Indikator Beban Aman (LMI/SLI):** Status: `{visualInspection.safetyDevices.lmi.status}`, Hasil: `{visualInspection.safetyDevices.lmi.notes}`
--   **Sistem Rem:** Status: `{visualInspection.mechanicalSystems.brakes.status}`, Hasil: `{visualInspection.mechanicalSystems.brakes.notes}`
--   **Kaki Penopang (Outriggers):** Status: `{visualInspection.outriggers.status}`, Hasil: `{visualInspection.outriggers.notes}`
--   **Boom & Jib:** Status: `{visualInspection.latticeBoom.status}`, Hasil NDT: `{nonDestructiveTest.boom.result}`
--   **Tali Kawat Baja & Hook:** Status: `{visualInspection.wireRopes.status}`, Hasil NDT Hook: `{nonDestructiveTest.mainHook.result}`
--   **Kabin & Kontrol:** Status: `{visualInspection.operatorCabin.status}`, Hasil: `{visualInspection.operatorCabin.notes}`
+- Indikator Beban Aman (LMI/SLI): Status:{inspectionAndTesting.testingFunctionLoadMomentIndicatorResult.status}, Hasil: {inspectionAndTesting.testingFunctionLoadMomentIndicatorResult.result}
+- Sistem Rem: Status: {inspectionAndTesting.visualBrakeParkingBrakeResult.status}, Hasil: {inspectionAndTesting.visualBrakeParkingBrakeResult.result} (Catatan: Mengambil dari hasil rem parkir)
+- Kaki Penopang (Outriggers): Status: {inspectionAndTesting.visualOutriggersJackResult.status}, Hasil: {inspectionAndTesting.visualOutriggersJackResult.result}
+- Boom & Jib: Status: {inspectionAndTesting.ndtBoomInspection3Result.status}, Hasil NDT: {inspectionAndTesting.ndtBoomInspection3Result.result} (Catatan: Mengambil dari temuan retak pada Jib)
+- Tali Kawat Baja & Hook: Status: {inspectionAndTesting.visualAuxiliaryWireRopeBreakageResult.status}, Hasil NDT Hook: {inspectionAndTesting.ndtMainHookMeasurementResultsResult.result} (Catatan: Status dari Tali Kawat, Hasil NDT dari Hook Utama)
+- Kabin & Kontrol: Status: {inspectionAndTesting.visualOperatorCabinLightingResult.status}, Hasil: {inspectionAndTesting.visualOperatorCabinLightingResult.result}
 
 ===========================================================================================
 ## FORMAT OUTPUT DAN SKENARIO (PILIH SALAH SATU)
