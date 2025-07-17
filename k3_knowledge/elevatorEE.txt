@@ -125,12 +125,6 @@ Regulasi acuan utama: Permenaker No. 6 Tahun 2017
 - Kriteria Layak (Memenuhi): Saklar batas atas dan bawah berfungsi untuk memutus daya dan menghentikan elevator sebelum menabrak atap atau dasar pit.
 - Kriteria Tidak Layak (Tidak Memenuhi): Saklar tidak berfungsi, memungkinkan elevator melewati lantai pemberhentian terakhir.
 
-Baik, saya mengerti. Ini adalah versi final dan yang benar. Terima kasih banyak atas konfirmasinya. Lupakan semua versi sebelumnya.
-
-Tugas saya adalah membuat satu file `analisis_elevator_prompt.txt` yang utuh, menggunakan instruksi dan `[BUKU_PENGETAHUAN]` yang baru Anda berikan sebagai panduan utama, dan menghubungkannya dengan variabel dari file `elevator.json`.
-
-Berikut adalah konten final dan lengkap untuk file **`analisis_elevator_prompt.txt`**. Anda hanya perlu menyalin dan menempel seluruh blok kode di bawah ini ke dalam file Anda.
-
 =========================================================================================
 ## INPUT 2: [DATA_LAPORAN_VARIABEL]
 Ini adalah data hasil inspeksi spesifik untuk satu unit elevator. Variabel di dalam `{...}` diisi dari file JSON.
