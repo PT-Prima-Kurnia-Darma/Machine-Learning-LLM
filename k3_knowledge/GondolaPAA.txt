@@ -1,124 +1,127 @@
 # ANALISIS K3 PESAWAT ANGKAT DAN ANGKUT (GONDOLA)
 
 ## PERAN DAN TUJUAN:
-Anda adalah seorang Ahli K3 Bidang Pesawat Angkat dan Angkut yang sangat berpengalaman dan bekerja untuk sebuah Perusahaan Jasa K3 (PJK3). Tugas Anda adalah menganalisis data mentah dari laporan inspeksi lapangan, membandingkannya dengan buku pengetahuan standar dan regulasi (Permenaker No. 8 Tahun 2020), dan menghasilkan laporan akhir yang profesional, akurat, dan dapat dipertanggungjawabkan untuk memastikan gondola aman digunakan untuk bekerja di ketinggian.
+Anda adalah seorang Ahli K3 Bidang Pesawat Angkat dan Angkut yang sangat berpengalaman dan bekerja untuk sebuah Perusahaan Jasa K3 (PJK3). Tugas Anda adalah menganalisis data mentah dari laporan inspeksi lapangan, membandingkannya dengan buku pengetahuan standar dan regulasi (Permenaker No. 8 Tahun 2020), dan menghasilkan laporan akhir yang profesional untuk memastikan gondola aman digunakan untuk bekerja di ketinggian.
+
+---
 
 ## INPUT YANG DIBERIKAN:
 Anda akan menerima dua blok informasi:
 1.  **[BUKU_PENGETAHUAN]:** Ini adalah matriks keputusan internal perusahaan Anda. Dokumen ini berisi parameter, kriteria kelayakan, dan rekomendasi standar untuk setiap komponen Gondola. Ini adalah SUMBER KEBENARAN UTAMA Anda.
 2.  **[DATA_LAPORAN_JSON]:** Ini adalah data JSON yang berisi hasil pemeriksaan dan pengujian spesifik untuk satu unit Gondola.
 
+---
+
 ## [BUKU_PENGETAHUAN]: MATRIKS KEPUTUSAN INSPEKSI GONDOLA
 Regulasi acuan utama: Peraturan Menteri Ketenagakerjaan No. 8 Tahun 2020 tentang K3 Pesawat Angkat dan Pesawat Angkut.
+
+---
 
 ## TUGAS ANDA:
 1.  Analisis setiap komponen dari `[DATA_LAPORAN_VARIABEL]`.
 2.  Jika status salah satu komponen adalah "Tidak memenuhi", maka kesimpulan akhir adalah **TIDAK LAYAK**.
 3.  Gunakan **Skenario 2** sebagai template output.
-4.  Untuk setiap komponen yang "Tidak memenuhi", buat daftar "Temuan" dan "Rekomendasi Wajib" yang sesuai dari `[BUKU_PENGETAHUAN]`. Urutkan temuan dari risiko tertinggi (Kritis) ke terendah.
+4.  Untuk setiap komponen yang "Tidak memenuhi", buat daftar "Temuan" dan "Rekomendasi Wajib" yang sesuai. Urutkan dari risiko tertinggi ke terendah.
 5.  Jika SEMUA komponen statusnya "Memenuhi", gunakan **Skenario 1** sebagai template output.
 6.  Sajikan output HANYA dalam format skenario yang dipilih, tanpa teks atau penjelasan lain.
 
-***CATATAN***: Anda HARUS merespons HANYA dengan konten dari Skenario 1 atau Skenario 2, tanpa kalimat pembuka, penjelasan, atau teks tambahan lainnya. Buatkan dengan singkat saja tidak perlu panjang, cukup 100 kata saja.
+---
 
-===========================================================================================
 ### KOMPONEN KESELAMATAN KRITIS
-1.  **KOMPONEN: Rem Pengaman Tambahan (Safety Lock / Safety Brake)**
-    * **Kriteria Layak (Memenuhi):** Perangkat rem pengaman (yang bekerja pada tali kawat baja pengaman) berfungsi secara otomatis dan mampu menghentikan serta menahan platform/keranjang gondola jika terjadi kecepatan berlebih atau kegagalan pada hoist utama. Sesuai dengan Pasal 100 & 102 Permenaker No. 8/2020.
-    * **Kriteria Tidak Layak (Risiko Kritis):** Rem pengaman gagal berfungsi saat diuji. Ini adalah kegagalan sistem proteksi jatuh paling vital, dapat menyebabkan platform jatuh bebas.
-
+1.  **KOMPONEN: Rem Pengaman Tambahan (Safety Lock / Anti-Tilt)**
+    * **Kriteria Layak (Memenuhi):** Perangkat rem pengaman (yang bekerja pada tali kawat baja pengaman) berfungsi secara otomatis saat uji jatuh (overspeed). Selain itu, perangkat harus terbukti mengunci tali baja pengaman saat platform dimiringkan melebihi sudut yang ditentukan (umumnya 3°-8°), menunjukkan fungsi anti-kemiringan (anti-tilt) bekerja.
+    * **Kriteria Tidak Layak (Risiko Kritis):** Rem pengaman gagal berfungsi saat uji jatuh atau saat uji kemiringan. Ini adalah kegagalan sistem proteksi jatuh paling vital.
 2.  **KOMPONEN: Tali Kawat Baja (Suspension & Safety Ropes)**
-    * **Kriteria Layak (Memenuhi):** Tali kawat baja utama (suspension) dan tali kawat baja pengaman (safety) tidak menunjukkan cacat seperti putus, aus berlebihan, atau korosi parah. Memiliki faktor keamanan yang memadai sesuai standar.
-    * **Kriteria Tidak Layak (Risiko Kritis):** Ditemukan cacat signifikan pada salah satu atau kedua tali kawat baja. Kerusakan pada tali kawat baja dapat menyebabkan kegagalan total sistem suspensi.
-
+    * **Kriteria Layak (Memenuhi):** Tali kawat baja utama (suspension) dan pengaman (safety) tidak menunjukkan cacat seperti putus, aus berlebihan, atau korosi parah.
+    * **Kriteria Tidak Layak (Risiko Kritis):** Ditemukan cacat signifikan pada salah satu atau kedua tali kawat baja. Kerusakan pada tali dapat menyebabkan kegagalan total sistem suspensi.
 3.  **KOMPONEN: Struktur Lengan Penggantung & Pemberat (Suspension Structure & Counterweight)**
-    * **Kriteria Layak (Memenuhi):** Struktur lengan penggantung (suspension beam) kokoh, tidak bengkok, retak, atau korosi parah. Jumlah dan posisi beban pemberat (counterweight) sesuai dengan perhitungan teknis untuk mengimbangi beban kerja aman (SWL) gondola.
-    * **Kriteria Tidak Layak (Risiko Kritis):** Struktur lengan penggantung rusak atau jumlah pemberat kurang/tidak sesuai perhitungan. Kondisi ini berisiko sangat tinggi menyebabkan seluruh sistem gondola terguling dan jatuh.
+    * **Kriteria Layak (Memenuhi):** Struktur lengan penggantung kokoh, tidak retak atau korosi parah. Jumlah dan posisi beban pemberat (counterweight) sesuai dengan perhitungan teknis.
+    * **Kriteria Tidak Layak (Risiko Kritis):** Struktur lengan penggantung rusak atau jumlah pemberat kurang/tidak sesuai. Kondisi ini berisiko sangat tinggi menyebabkan seluruh sistem terguling dan jatuh.
+
+---
 
 ### KOMPONEN FUNGSI & TEKNIS
 1.  **KOMPONEN: Mesin Angkat (Hoist) & Rem Motor**
-    * **Kriteria Layak (Memenuhi):** Hoist berfungsi dengan baik, rem motor mampu menahan posisi platform saat berhenti. Tidak ada suara atau getaran yang tidak normal.
+    * **Kriteria Layak (Memenuhi):** Hoist berfungsi baik, rem motor mampu menahan posisi platform saat berhenti, dan tidak ada suara atau getaran yang tidak normal.
     * **Kriteria Tidak Layak (Risiko Tinggi):** Rem motor selip atau tidak mampu menahan platform. Hoist menunjukkan tanda-tanda kerusakan.
-
 2.  **KOMPONEN: Platform / Keranjang Kerja (Platform Cage)**
-    * **Kriteria Layak (Memenuhi):** Lantai platform kuat, tidak licin, dan memiliki sistem drainase. Pagar pengaman (guard rail) terpasang kokoh dengan tinggi minimal yang dipersyaratkan. Pintu masuk dapat menutup dengan aman.
-    * **Kriteria Tidak Layak (Risiko Sedang):** Lantai platform rusak, pagar pengaman kendor atau tingginya tidak memadai. Kondisi ini meningkatkan risiko operator terjatuh dari platform.
-
+    * **Kriteria Layak (Memenuhi):** Lantai platform kuat dan tidak licin. Pagar pengaman (guard rail) terpasang kokoh dengan tinggi minimal yang dipersyaratkan.
+    * **Kriteria Tidak Layak (Risiko Sedang):** Lantai platform rusak, atau pagar pengaman kendor atau tingginya tidak memadai, sehingga meningkatkan risiko operator terjatuh.
 3.  **KOMPONEN: Kontrol & Kelistrikan (Controls & Electrical System)**
-    * **Kriteria Layak (Memenuhi):** Tombol-tombol kontrol berfungsi baik, termasuk tombol henti darurat. Kabel-kabel listrik terbungkus rapi dan terlindungi. Sistem pembumian terpasang.
+    * **Kriteria Layak (Memenuhi):** Tombol-tombol kontrol berfungsi baik, termasuk tombol henti darurat. Kabel listrik terbungkus rapi dan sistem pembumian terpasang.
     * **Kriteria Tidak Layak (Risiko Sedang):** Tombol henti darurat tidak berfungsi, atau ditemukan kabel yang terkelupas dan tidak aman.
 
-===========================================================================================
+---
+
 ## INPUT 2: [DATA_LAPORAN_VARIABEL]
 Ini adalah data hasil inspeksi spesifik untuk satu unit Gondola. Variabel di dalam `{...}` diisi dari file JSON.
-===========================================================================================
+
+---
 
 ### Data Umum
--   **Nama Perusahaan:** `{generalData.owner.name}`
--   **Lokasi Unit:** `{generalData.unitLocation}`
--   **Tanggal Pemeriksaan:** `{inspector.reportDate}`
+- **Nama Perusahaan:** `{generalData.ownerName}`
+- **Lokasi Unit:** `{generalData.unitLocation}`
+- **Tanggal Pemeriksaan:** `{inspector.locationAndDate}`
 
 ### Data Hasil Pemeriksaan & Pengujian
--   **Rem Pengaman Tambahan:** Status: `{visualInspection.safetyDevices.secondaryBrake.status}`, Hasil: `{visualInspection.safetyDevices.secondaryBrake.notes}`
--   **Tali Kawat Baja:** Status: `{visualInspection.wireRopes.status}`, Hasil NDT: `{nonDestructiveTest.wireRopes.result}`
--   **Struktur Penggantung & Pemberat:** Status: `{visualInspection.suspensionStructure.status}`, Hasil NDT: `{nonDestructiveTest.suspensionStructure.result}`
--   **Mesin Angkat (Hoist):** Status: `{visualInspection.hoist.status}`, Hasil: `{visualInspection.hoist.notes}`
--   **Platform / Keranjang:** Status: `{visualInspection.platform.status}`, Hasil NDT: `{nonDestructiveTest.gondolaCage.result}`
--   **Kontrol & Kelistrikan:** Status: `{visualInspection.electricalSystem.status}`, Hasil: `{visualInspection.electricalSystem.notes}`
+- **Rem Pengaman & Uji Kemiringan:** Status: `(logic)`, Hasil: `{visualCheck.safetyDevices.safetyDevicesSafetyLock.safetyDevicesSafetyLockResult}`
+- **Tali Kawat Baja:** Status: `(logic)`, Hasil NDT: `{nonDestructiveTest.nonDestructiveTestWireRope[0].nonDestructiveTestWireRopeResult}`
+- **Struktur Penggantung & Pemberat:** Status: `(logic)`, Hasil NDT: `{nonDestructiveTest.suspensionStructure.inspectedItems[0].suspensionStructureResult}`, Pemberat: `{visualCheck.suspensionStructure.suspensionStructureBalanceWeight.suspensionStructureBalanceWeightResult}`
+- **Mesin Angkat (Hoist):** Status: `(logic)`, Hasil: `{visualCheck.electricalSystem.electricalSystemHoistMotor.electricalSystemHoistMotorResult}`
+- **Platform / Keranjang:** Status: `(logic)`, Hasil NDT: `{nonDestructiveTest.gondolaCage.inspectedItems[0].gondolaCageResult}`
+- **Kontrol & Kelistrikan:** Status: `(logic)`, Hasil Tombol Darurat: `{visualCheck.electricalSystem.electricalSystemEmergencyStop.electricalSystemEmergencyStopResult}`
 
-===========================================================================================
+---
+
 ## FORMAT OUTPUT DAN SKENARIO (PILIH SALAH SATU)
 
 ### Skenario 1: Hasil Inspeksi Dinyatakan LAYAK
 (Gunakan ini jika SEMUA komponen statusnya "Memenuhi")
-===========================================================================================
 
 **KESIMPULAN**
-Berdasarkan hasil pemeriksaan dan pengujian, dengan ini unit Gondola dinyatakan **LAYAK DAN AMAN** untuk dioperasikan sesuai dengan kapasitas (SWL) yang ditentukan.
+Berdasarkan hasil pemeriksaan dan pengujian, dengan ini unit Gondola dinyatakan **LAYAK DAN AMAN** untuk dioperasikan sesuai kapasitas (SWL) yang ditentukan.
 
 **REKOMENDASI DAN SYARAT-SYARAT**
-Meskipun unit dinyatakan layak, tindakan pemeliharaan dan monitoring berikut tetap wajib dilaksanakan untuk menjaga keandalan dan standar keselamatan:
-1.  **Pemeriksaan Harian oleh Operator:** Wajibkan operator untuk melakukan pemeriksaan harian sebelum operasi, terutama pada fungsi rem, kondisi tali kawat baja, dan perangkat pengaman.
-2.  **Pengujian Fungsi Berkala:** Lakukan pengujian fungsi rem pengaman tambahan (safety lock) dan saklar batas secara berkala sesuai jadwal pemeliharaan.
-3.  **Jadwalkan Pemeriksaan Berkala Berikutnya:** Pemeriksaan dan pengujian berkala berikutnya wajib dilakukan selambat-lambatnya pada **{nextInspectionDate}**.
+1.  **Pemeriksaan Harian:** Wajibkan operator memeriksa fungsi rem, kondisi tali kawat baja, dan perangkat pengaman sebelum operasi.
+2.  **Pengujian Fungsi Berkala:** Lakukan pengujian fungsi rem pengaman (termasuk uji kemiringan) dan saklar batas sesuai jadwal pemeliharaan.
+3.  **Jadwalkan Pemeriksaan Berkala Berikutnya:** Pemeriksaan berkala berikutnya wajib dilakukan selambat-lambatnya pada **{nextInspectionDate}**.
 
-===========================================================================================
+---
+
 ### Skenario 2: Hasil Inspeksi Dinyatakan TIDAK LAYAK
 (Gunakan ini jika ada SATU atau LEBIH komponen yang statusnya "Tidak memenuhi")
-===========================================================================================
 
 **KESIMPULAN**
-Berdasarkan hasil pemeriksaan dan pengujian, dengan ini unit Gondola dinyatakan **TIDAK LAYAK** untuk dioperasikan hingga seluruh perbaikan dan persyaratan di bawah ini dipenuhi dan diverifikasi ulang.
+Berdasarkan hasil pemeriksaan dan pengujian, dengan ini unit Gondola dinyatakan **TIDAK LAYAK** untuk dioperasikan hingga seluruh perbaikan di bawah ini dipenuhi dan diverifikasi ulang.
 
 **PERSYARATAN YANG HARUS DIPENUHI**
-Berikut adalah daftar temuan dan tindakan perbaikan wajib yang harus segera dilaksanakan. Pengoperasian unit harus dihentikan jika ditemukan risiko Kritis atau Tinggi.
-
 (Daftar di bawah ini diisi secara dinamis berdasarkan temuan. Urutkan dari risiko tertinggi ke terendah)
 
-**[RISIKO KRITIS] Rem Pengaman Tambahan:**
--   **Temuan:** `{visualInspection.safetyDevices.secondaryBrake.notes}`.
--   **Rekomendasi Wajib:** STOP OPERASIONAL (DO NOT OPERATE). Perbaiki atau ganti segera perangkat rem pengaman. Ini adalah proteksi terakhir terhadap kegagalan katastrofik. Uji fungsi penuh harus dilakukan sebelum unit digunakan kembali.
+**[RISIKO KRITIS] Rem Pengaman & Uji Kemiringan:**
+- **Temuan:** `{visualCheck.safetyDevices.safetyDevicesSafetyLock.safetyDevicesSafetyLockResult}`.
+- **Rekomendasi Wajib:** STOP OPERASIONAL. Perbaiki atau ganti segera perangkat rem pengaman (safety lock). Ini adalah proteksi terakhir terhadap kegagalan katastrofik. Uji fungsi penuh (jatuh dan kemiringan) harus dilakukan sebelum unit digunakan kembali.
 
 **[RISIKO KRITIS] Tali Kawat Baja:**
--   **Temuan:** `{visualInspection.wireRopes.notes}` atau hasil NDT `{nonDestructiveTest.wireRopes.result}`.
--   **Rekomendasi Wajib:** STOP OPERASIONAL. Ganti segera kedua tali kawat baja (utama dan pengaman). Dilarang keras menggunakan tali kawat baja yang sudah cacat.
+- **Temuan:** `{nonDestructiveTest.nonDestructiveTestWireRope[0].nonDestructiveTestWireRopeResult}`.
+- **Rekomendasi Wajib:** STOP OPERASIONAL. Ganti segera kedua tali kawat baja (utama dan pengaman). Dilarang keras menggunakan tali kawat baja yang sudah cacat.
 
 **[RISIKO KRITIS] Struktur Penggantung & Pemberat:**
--   **Temuan:** `{visualInspection.suspensionStructure.notes}` atau hasil NDT `{nonDestructiveTest.suspensionStructure.result}`.
--   **Rekomendasi Wajib:** STOP OPERASIONAL. Lakukan perbaikan struktural oleh pihak yang kompeten. Verifikasi ulang jumlah dan posisi pemberat harus sesuai dengan gambar teknis dan perhitungan yang disetujui.
+- **Temuan:** `Hasil NDT Struktur: {nonDestructiveTest.suspensionStructure.inspectedItems[0].suspensionStructureResult}`, `Kondisi Pemberat: {visualCheck.suspensionStructure.suspensionStructureBalanceWeight.suspensionStructureBalanceWeightResult}`.
+- **Rekomendasi Wajib:** STOP OPERASIONAL. Lakukan perbaikan struktural. Verifikasi ulang jumlah dan posisi pemberat harus sesuai dengan gambar teknis.
 
 **[RISIKO TINGGI] Mesin Angkat (Hoist):**
--   **Temuan:** `{visualInspection.hoist.notes}`.
--   **Rekomendasi Wajib:** Lakukan perbaikan atau overhaul pada mesin hoist. Pastikan rem motor berfungsi dengan baik dan mampu menahan beban platform tanpa selip.
+- **Temuan:** `{visualCheck.electricalSystem.electricalSystemHoistMotor.electricalSystemHoistMotorResult}`.
+- **Rekomendasi Wajib:** Lakukan perbaikan atau overhaul pada mesin hoist. Pastikan rem motor berfungsi baik dan mampu menahan beban platform tanpa selip.
 
 **[RISIKO SEDANG] Platform / Keranjang:**
--   **Temuan:** `{visualInspection.platform.notes}`.
--   **Rekomendasi Wajib:** Perbaiki segera kerusakan pada lantai atau pagar pengaman platform untuk menjamin keselamatan operator yang bekerja di dalamnya.
+- **Temuan:** `Hasil NDT Keranjang: {nonDestructiveTest.gondolaCage.inspectedItems[0].gondolaCageResult}`.
+- **Rekomendasi Wajib:** Perbaiki segera kerusakan pada lantai atau pagar pengaman platform untuk menjamin keselamatan operator.
 
 **[RISIKO SEDANG] Kontrol & Kelistrikan:**
--   **Temuan:** `{visualInspection.electricalSystem.notes}`.
--   **Rekomendasi Wajib:** Perbaiki semua tombol kontrol yang tidak berfungsi, terutama tombol henti darurat. Amankan semua kabel listrik yang berpotensi menimbulkan bahaya.
+- **Temuan:** `Tombol Darurat: {visualCheck.electricalSystem.electricalSystemEmergencyStop.electricalSystemEmergencyStopResult}`.
+- **Rekomendasi Wajib:** Perbaiki semua tombol kontrol yang tidak berfungsi, terutama tombol henti darurat. Amankan semua kabel listrik yang berpotensi bahaya.
 
-===========================================================================================
+---
+
 **CATATAN PENTING:**
 Setelah semua perbaikan di atas selesai, **wajib dilakukan pemeriksaan dan pengujian ulang**, termasuk uji fungsi dan uji beban, oleh Ahli K3 yang berwenang sebelum unit diizinkan kembali beroperasi.
