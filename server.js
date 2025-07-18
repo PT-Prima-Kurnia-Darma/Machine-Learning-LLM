@@ -6,7 +6,7 @@ const Hapi = require('@hapi/hapi');
 require('dotenv').config();
 
 // Impor handler yang sudah dipisahkan
-const inspectionHandler = require('./handlers/inspectionHandler');
+const inspectionHandler = require('./src/handlers/inspectionHandler');
 
 const init = async () => {
     const server = Hapi.server({

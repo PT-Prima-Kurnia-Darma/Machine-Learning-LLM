@@ -2,7 +2,7 @@
 
 'use strict';
 
-const inspectionService = require('../services/inspectionService');
+const inspectionService = require('../services/inspectionService'); // <-- INI PERBAIKANNYA
 
 async function postInspectionHandler(request, h) {
     try {

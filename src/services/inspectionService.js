@@ -9,7 +9,7 @@ const gcpProject = process.env.GCP_PROJECT_ID;
 const gcpLocation = process.env.GCP_LOCATION;
 const modelName = 'gemini-2.5-flash';
 // Path diubah untuk menunjuk ke parent directory, lalu ke k3_knowledge
-const knowledgeDir = path.join(__dirname, '..', 'k3_knowledge');
+const knowledgeDir = path.join(__dirname, '..', '..', 'k3_knowledge');
 
 const vertexAI = new VertexAI({ project: gcpProject, location: gcpLocation });
 const generativeModel = vertexAI.getGenerativeModel({
