@@ -10,37 +10,36 @@ const { VertexAI } = require('@google-cloud/vertexai');
 require('dotenv').config();
 
 // --- Project & Model Configuration ---
-const project = process.env.GCP_PROJECT_ID;
-const location = process.env.GCP_LOCATION; // Should be 'asia-southeast1'
-const model = 'gemini-2.5-flash'; // Model updated as requested
+const gcpProject = process.env.GCP_PROJECT_ID;
+const gcpLocation = process.env.GCP_LOCATION; // Should be 'asia-southeast1'
+const modelName = 'gemini-2.5-flash'; 
 
 // --- Initialize VertexAI Client ---
-const vertex_ai = new VertexAI({ project, location });
-const generativeModel = vertex_ai.getGenerativeModel({
-    model,
-    safetySettings: [{ 
-        category: 'HARM_CATEGORY_DANGEROUS_CONTENT', 
-        threshold: 'BLOCK_ONLY_HIGH' 
+const vertexAI = new VertexAI({ project: gcpProject, location: gcpLocation });
+const generativeModel = vertexAI.getGenerativeModel({
+    model: modelName,
+    safetySettings: [{
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_ONLY_HIGH'
     }],
-    generationConfig: { maxOutputTokens: 8192, temperature: 0, responseMimeType: 'application/json' },
+    generationConfig: { maxOutputTokens: 8192, temperature: 0.2, responseMimeType: 'application/json' },
 });
 
 // --- Constants ---
-const KNOWLEDGE_DIR = path.join(__dirname, 'k3_knowledge');
+const knowledgeDir = path.join(__dirname, 'k3_knowledge');
 
 // --- Helper Functions ---
 
 /**
- * Finds and reads a knowledge file from disk based on the equipment type.
+ * Finds and reads a knowledge file from disk.
  */
 async function getKnowledgeFromFile(equipmentType) {
     const equipmentKey = equipmentType.split(' ')[0].toLowerCase();
     console.log(`🔍 Searching for knowledge file with key: '${equipmentKey}'`);
 
     try {
-        const allFiles = await fs.readdir(KNOWLEDGE_DIR);
-
-        const matchingFile = allFiles.find(file => 
+        const allFiles = await fs.readdir(knowledgeDir);
+        const matchingFile = allFiles.find(file =>
             file.toLowerCase().startsWith(equipmentKey) && path.extname(file).toLowerCase() === '.txt'
         );
 
@@ -48,35 +47,37 @@ async function getKnowledgeFromFile(equipmentType) {
             throw new Error(`Knowledge base not found for: ${equipmentType}. No file found starting with key: '${equipmentKey}'`);
         }
 
-        const filePath = path.join(KNOWLEDGE_DIR, matchingFile);
+        const filePath = path.join(knowledgeDir, matchingFile);
         console.log(`✅ Found matching file. Reading: ${filePath}`);
         
         const content = await fs.readFile(filePath, 'utf-8');
         return content;
 
     } catch (error) {
-        console.error("Error inside getKnowledgeFromFile:", error.message);
+        console.error("Error in getKnowledgeFromFile:", error.message);
         throw error;
     }
 }
 
 /**
- * Summarizes inspection findings from the input data object.
+ * Summarizes inspection findings from the input data.
  */
 function summarizeInspectionFindings(inspectionDataObject) {
-    let findings = [];
-    function traverse(obj, path) {
+    const findings = [];
+    
+    function traverse(obj, currentPath) {
         for (const key in obj) {
-            const currentPath = path ? `${path} -> ${key}` : key;
+            const newPath = currentPath ? `${currentPath} -> ${key}` : key;
             if (typeof obj[key] === 'object' && obj[key] !== null) {
                 if ('result' in obj[key] && 'status' in obj[key] && obj[key].status === false) {
-                    findings.push(`- ${currentPath.replace(/result$/i, '')}: ${obj[key].result}`);
+                    findings.push(`- ${newPath.replace(/result$/i, '')}: ${obj[key].result}`);
                 } else {
-                    traverse(obj[key], currentPath);
+                    traverse(obj[key], newPath);
                 }
             }
         }
     }
+
     traverse(inspectionDataObject, '');
     if (findings.length === 0) {
         return 'All inspected items meet the standards and are in good condition.';
@@ -85,48 +86,76 @@ function summarizeInspectionFindings(inspectionDataObject) {
 }
 
 /**
- * Creates the final, detailed prompt to be sent to the AI.
- * --- THIS FUNCTION IS UPDATED BASED ON THE LATEST INSTRUCTIONS ---
+ * --- UPDATED PROMPT LOGIC ---
+ * Creates the final, detailed prompt for the AI.
+ * Instructions are in Indonesian to generate the desired Indonesian output.
  */
-function createFinalPrompt(regulations, findingsSummary, generalData) {
+function createFinalPrompt(regulations, findingsSummary, equipmentType) {
     return `
-You are a senior OHS (K3) inspection expert. Your task is to analyze an inspection report and provide a conclusion and recommendations based on a provided knowledge base.
+Anda adalah seorang Ahli K3 (Keselamatan dan Kesehatan Kerja) senior yang membuat laporan inspeksi formal.
+Tugas Anda adalah menghasilkan output JSON berdasarkan data yang diberikan.
 
 ---
-[BUKU_PENGETAHUAN_K3]:
+[KNOWLEDGE_BASE]:
 ${regulations}
 ---
-[DATA_TEMUAN_LAPANGAN]:
+[INSPECTION_FINDINGS]:
 ${findingsSummary}
 ---
+[EQUIPMENT_TYPE]:
+${equipmentType}
+---
 
-## TUGAS ANDA:
-1.  Analisis setiap komponen dari [DATA_TEMUAN_LAPANGAN].
-2.  Bandingkan setiap temuan dengan standar yang ada di [BUKU_PENGETAHUAN_K3].
-3.  Buatlah output dalam format JSON yang telah ditentukan di bawah.
+## YOUR TASK:
+Generate a valid JSON object ONLY. Follow the rules below VERY STRICTLY.
 
-### Aturan Output JSON:
+### JSON Output Rules:
 
-#### 1. "conclusion" (Kesimpulan):
-* Jika [DATA_TEMUAN_LAPANGAN] berisi satu atau lebih temuan, nilai "conclusion" HARUS "TIDAK LAIK".
-* Jika [DATA_TEMUAN_LAPANGAN] menyatakan semua item dalam kondisi baik, nilai "conclusion" HARUS "LAIK".
-
-#### 2. "recommendation" (Rekomendasi):
-* **Jika kesimpulan "TIDAK LAIK":**
-    * Buat daftar rekomendasi dalam bentuk array of strings.
-    * Rekomendasi pertama HARUS selalu: "1. STOP OPERASIONAL"
-    * Untuk setiap temuan di [DATA_TEMUAN_LAPANGAN], buat satu "Rekomendasi Wajib" yang sesuai dari [BUKU_PENGETAHUAN_K3].
-    * **PENTING**: Urutkan rekomendasi (setelah "STOP OPERASIONAL") berdasarkan tingkat risiko bahaya, dari yang paling Kritis ke risiko yang lebih rendah.
-    * Setiap string rekomendasi HARUS menyertakan justifikasi singkat mengenai risiko atau standar yang dilanggar. Contoh: "2. Segera perbaiki klakson untuk memenuhi standar keselamatan alat angkat dan memastikan komunikasi di area kerja."
-
-* **Jika kesimpulan "LAIK":**
-    * Berikan satu rekomendasi tunggal untuk perawatan rutin dalam array. Contoh: ["1. Lakukan perawatan rutin sesuai jadwal untuk menjaga performa dan keselamatan."].
-
-Sajikan output HANYA dalam format JSON di bawah ini, tanpa teks atau penjelasan tambahan.
 {
   "conclusion": "string",
   "recommendation": ["string", "string", "..."]
 }
+
+### Content Rules:
+
+#### 1. "conclusion":
+* Create a formal, complete sentence summarizing the inspection result.
+* The status word MUST be in all caps: **"LAYAK"** or **"TIDAK LAYAK"**.
+* **If findings state 'good condition' (Laik):** The sentence must state the equipment is fit for use.
+    * **Example:** "Dari hasil pemeriksaan dan pengujian terhadap ${equipmentType}, disimpulkan bahwa peralatan tersebut masih **LAYAK** dan baik (memenuhi syarat K3)."
+* **If findings list issues (Tidak Laik):** The sentence must state the equipment is not fit for use and requires repair.
+    * **Example:** "Berdasarkan hasil pemeriksaan dan pengujian, ditemukan beberapa ketidaksesuaian pada ${equipmentType} yang menyebabkannya dinyatakan **TIDAK LAYAK** dan memerlukan perbaikan segera."
+
+#### 2. "recommendation":
+* This must be an array of strings.
+* Each string in the array MUST start with a number followed by a period and a space (e.g., "1. ", "2. ", "3. ").
+
+* **If conclusion is "LAYAK":**
+    * Generate a list of general operational and maintenance recommendations.
+    * You MUST follow the style, content, and numbering of the example below.
+    * The last recommendation MUST include a placeholder "dd/mm/yyyy" for the next inspection.
+    * **MANDATORY EXAMPLE FOR "LAYAK" CASE:**
+        [
+          "1. Eskalator tersebut harus dioperasikan oleh operator yang ahli dibidang Eskalator.",
+          "2. Sebelum dioperasikan, operator harus memastikan bahwa semua alat perlengkapan terpasang dengan baik.",
+          "3. Operator yang mengoperasikan harus yang mempunyai Lisensi dari Kementerian Ketenagakerjaan Republik Indonesia.",
+          "4. Operator harus selalu mengecek/memeriksa Oli Gear box sesuai jadwal yang telah ditetapkan.",
+          "5. Teknisi yang melakukan perbaikan harus mempunyai Lisensi dari Kementerian Ketenagakerjaan Republik Indonesia.",
+          "6. Jika terdapat hal-hal yang mencurigakan dalam pengoperasian, operator harus segera mematikannya dan melaporkannya kepada bagian yang bertanggung jawab di perusahaan.",
+          "7. Paling lambat dd/mm/yyyy Eskalator tersebut harus dilakukan pemeriksaan/pengujian berkala oleh Pengawas Spesialis Keselamatan dan Kesehatan Kerja atau Ahli K3."
+        ]
+
+* **If conclusion is "TIDAK LAYAK":**
+    * The first recommendation MUST be "1. STOP OPERASIONAL untuk mencegah risiko kecelakaan."
+    * For each issue in [INSPECTION_FINDINGS], create a specific, formal recommendation for repair, starting with "2. ", "3. ", and so on.
+    * Justify each recommendation by referencing the safety risk involved.
+    * **Example for "TIDAK LAYAK" case:**
+        [
+            "1. STOP OPERASIONAL untuk mencegah risiko kecelakaan.",
+            "2. Perbaiki atau perkuat struktur rangka/frame untuk memastikan integritas dan stabilitas eskalator, mencegah risiko kegagalan struktural yang dapat menyebabkan kecelakaan fatal."
+        ]
+
+Provide the output ONLY in the specified JSON format, with no extra text or explanations.
 `;
 }
 
@@ -139,17 +168,20 @@ const init = async () => {
 
     server.route({
         method: 'POST',
-        path: '/LLM-generate',
+        path: '/LLM-generate', // Path uses kebab-case convention
         handler: async (request, h) => {
             try {
                 const inspectionInput = request.payload;
                 const regulations = await getKnowledgeFromFile(inspectionInput.equipmentType);
                 const findingsSummary = summarizeInspectionFindings(inspectionInput.inspectionAndTesting);
-                const finalPrompt = createFinalPrompt(regulations, findingsSummary, inspectionInput.generalData);
+                
+                // Pass equipmentType directly for use in the prompt
+                const finalPrompt = createFinalPrompt(regulations, findingsSummary, inspectionInput.equipmentType);
+                
                 const result = await generativeModel.generateContent(finalPrompt);
-                const response = result.response;
+                const { response } = result;
 
-                if (!response.candidates || response.candidates.length === 0 || !response.candidates[0].content || !response.candidates[0].content.parts || response.candidates[0].content.parts.length === 0 ) {
+                if (!response.candidates?.length || !response.candidates[0].content?.parts?.length) {
                     console.error('Invalid or blocked response from AI:', JSON.stringify(response, null, 2));
                     throw new Error('Response from AI was empty, blocked, or invalid.');
                 }
@@ -159,8 +191,10 @@ const init = async () => {
                 const endIndex = rawText.lastIndexOf('}');
                 
                 if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
+                    console.error('Could not find a valid JSON object in the AI response:', rawText);
                     throw new Error('Could not find a valid JSON object in the AI response.');
                 }
+
                 const jsonString = rawText.substring(startIndex, endIndex + 1);
                 const llmResultObject = JSON.parse(jsonString);
                 
@@ -177,8 +211,8 @@ const init = async () => {
 
     await server.start();
     console.log(`✅ Server running on ${server.info.uri}`);
-    console.log(`Using Project: ${project} in Region: ${location}`);
-    console.log(`Using Model: ${model}`);
+    console.log(`Using Project: ${gcpProject} in Region: ${gcpLocation}`);
+    console.log(`Using Model: ${modelName}`);
 };
 
 // Graceful shutdown logic
