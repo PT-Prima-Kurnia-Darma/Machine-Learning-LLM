@@ -12,11 +12,10 @@ require('dotenv').config();
 // --- Project & Model Configuration ---
 const project = process.env.GCP_PROJECT_ID;
 const location = process.env.GCP_LOCATION; // Should be 'asia-southeast1'
-const model = 'gemini-2.5-flash';
+const model = 'gemini-2.5-flash'; // Model updated as requested
 
 // --- Initialize VertexAI Client ---
 const vertex_ai = new VertexAI({ project, location });
-
 const generativeModel = vertex_ai.getGenerativeModel({
     model,
     safetySettings: [{ 
@@ -33,7 +32,6 @@ const KNOWLEDGE_DIR = path.join(__dirname, 'k3_knowledge');
 
 /**
  * Finds and reads a knowledge file from disk based on the equipment type.
- * This new logic SEARCHES for a file starting with the key, instead of guessing the full name.
  */
 async function getKnowledgeFromFile(equipmentType) {
     const equipmentKey = equipmentType.split(' ')[0].toLowerCase();
@@ -42,13 +40,11 @@ async function getKnowledgeFromFile(equipmentType) {
     try {
         const allFiles = await fs.readdir(KNOWLEDGE_DIR);
 
-        // Find the first file in the directory that starts with our key (case-insensitive)
         const matchingFile = allFiles.find(file => 
             file.toLowerCase().startsWith(equipmentKey) && path.extname(file).toLowerCase() === '.txt'
         );
 
         if (!matchingFile) {
-            // If no file matches, throw a clear error.
             throw new Error(`Knowledge base not found for: ${equipmentType}. No file found starting with key: '${equipmentKey}'`);
         }
 
@@ -59,7 +55,6 @@ async function getKnowledgeFromFile(equipmentType) {
         return content;
 
     } catch (error) {
-        // Re-throw the error to be caught by the main handler
         console.error("Error inside getKnowledgeFromFile:", error.message);
         throw error;
     }
@@ -67,7 +62,6 @@ async function getKnowledgeFromFile(equipmentType) {
 
 /**
  * Summarizes inspection findings from the input data object.
- * (Your original logic, unchanged)
  */
 function summarizeInspectionFindings(inspectionDataObject) {
     let findings = [];
@@ -92,41 +86,50 @@ function summarizeInspectionFindings(inspectionDataObject) {
 
 /**
  * Creates the final, detailed prompt to be sent to the AI.
- * (Your original logic, unchanged)
+ * --- THIS IS THE FINAL VERSION WITH NO LENGTH RESTRICTIONS ---
  */
 function createFinalPrompt(regulations, findingsSummary, generalData) {
     return `
-You are a senior OHS (K3) inspection expert.
+You are a senior OHS (K3) inspection expert. Your task is to conduct a thorough analysis of an inspection report and provide a comprehensive, unrestricted conclusion and set of recommendations based on a provided knowledge base. Do not summarize or shorten your reasoning.
 
-INSPECTION CONTEXT:
-- Equipment Type: ${generalData.safetyObjectTypeAndNumber}
-- Inspection Date: ${generalData.inspectionDate}
-- Purpose: ${generalData.examinationType}
-
-RELEVANT SAFETY REGULATIONS & STANDARDS (Reference):
 ---
+[BUKU_PENGETAHUAN_K3]:
 ${regulations}
 ---
-
-FIELD FINDINGS SUMMARY:
----
+[DATA_TEMUAN_LAPANGAN]:
 ${findingsSummary}
 ---
 
-YOUR TASK:
-Based on the comparison between FIELD FINDINGS and the RELEVANT REGULATIONS, create a conclusion and recommendation in Indonesian.
-1.  **Conclusion (Kesimpulan)**: Determine if the equipment is "LAIK" (Pass) or "TIDAK LAIK" (Fail). The "LAIK" status is only given if ALL findings meet the standard. If even one item fails, the status is "TIDAK LAIK".
-2.  **Recommendation (Rekomendasi)**:
-    * If the conclusion is "TIDAK LAIK": The string MUST begin with the exact phrase "STOP OPERASIONAL\\n", followed by a numbered list of repair actions in Indonesian.
-    * If the conclusion is "LAIK": Provide a routine maintenance recommendation in Indonesian.
+## TUGAS ANDA:
+1.  Lakukan analisis mendalam untuk setiap komponen dari [DATA_TEMUAN_LAPANGAN].
+2.  Bandingkan setiap temuan secara cermat dengan semua standar yang relevan di dalam [BUKU_PENGETAHUAN_K3].
+3.  Buatlah output dalam format JSON yang telah ditentukan di bawah tanpa ada batasan panjang.
 
-Provide the answer ONLY in the following JSON format, without any extra words or explanation.
+### Aturan Output JSON:
+
+#### 1. "conclusion" (Kesimpulan):
+* Jika [DATA_TEMUAN_LAPANGAN] berisi satu atau lebih temuan, nilai "conclusion" HARUS "TIDAK LAIK".
+* Jika [DATA_TEMUAN_LAPANGAN] menyatakan semua item dalam kondisi baik, nilai "conclusion" HARUS "LAIK".
+
+#### 2. "recommendation" (Rekomendasi):
+* **Jika kesimpulan "TIDAK LAIK":**
+    * Buat daftar rekomendasi dalam bentuk array of strings.
+    * Rekomendasi pertama HARUS selalu: "1. STOP OPERASIONAL".
+    * Untuk setiap temuan di [DATA_TEMUAN_LAPANGAN], buat satu "Rekomendasi Wajib" yang komprehensif, berdasarkan analisis dari [BUKU_PENGETAHUAN_K3].
+    * **PENTING**: Urutkan rekomendasi (setelah "STOP OPERASIONAL") berdasarkan tingkat risiko bahaya, dari yang paling Kritis ke risiko yang lebih rendah.
+    * **INSTRUKSI DETAIL**: Setiap string rekomendasi HARUS **menjelaskan secara rinci justifikasinya**. Uraikan dengan lengkap standar mana yang dilanggar dari [BUKU_PENGETAHUAN_K3], dan jelaskan potensi bahaya atau konsekuensi kegagalan jika tidak segera diperbaiki. Berikan penjelasan selengkap mungkin.
+
+* **Jika kesimpulan "LAIK":**
+    * Berikan satu rekomendasi tunggal untuk perawatan rutin dalam array, dengan penjelasan mengenai pentingnya perawatan tersebut. Contoh: ["1. Lanjutkan program perawatan rutin sesuai jadwal pabrikan untuk menjaga kondisi prima peralatan, memastikan keselamatan operator, dan memperpanjang umur pakai unit."].
+
+Sajikan output HANYA dalam format JSON di bawah ini, tanpa teks atau penjelasan tambahan di luar format tersebut.
 {
   "conclusion": "string",
-  "recommendation": "string"
+  "recommendation": ["string", "string", "..."]
 }
 `;
 }
+
 
 /**
  * Initializes and starts the Hapi server.
