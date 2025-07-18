@@ -1,15 +1,18 @@
+// File: src/inspectionService.js
+
 'use strict';
 
 const fs = require('fs/promises');
 const path = require('path');
 const { VertexAI } = require('@google-cloud/vertexai');
 
-// --- Konfigurasi dan inisialisasi AI pindah ke sini ---
+// --- Konfigurasi dan inisialisasi AI ---
 const gcpProject = process.env.GCP_PROJECT_ID;
 const gcpLocation = process.env.GCP_LOCATION;
 const modelName = 'gemini-2.5-flash';
-// Path diubah untuk menunjuk ke parent directory, lalu ke k3_knowledge
-const knowledgeDir = path.join(__dirname, '..', '..', 'k3_knowledge');
+
+// PERBAIKAN: Path sekarang hanya perlu naik satu level (dari /src ke /) untuk menemukan k3_knowledge
+const knowledgeDir = path.join(__dirname, '..', 'k3_knowledge');
 
 const vertexAI = new VertexAI({ project: gcpProject, location: gcpLocation });
 const generativeModel = vertexAI.getGenerativeModel({
@@ -147,7 +150,4 @@ async function generateReport(inspectionInput) {
     return JSON.parse(jsonString);
 }
 
-// ===================================================================
-// PASTIKAN BARIS DI BAWAH INI MENGGUNAKAN KURUNG KURAWAL `{}`
-// ===================================================================
 module.exports = { generateReport };

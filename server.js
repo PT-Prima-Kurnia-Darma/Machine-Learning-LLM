@@ -1,12 +1,11 @@
-// File: server.js (Versi Baru)
+// File: server.js
 
 'use strict';
 
 const Hapi = require('@hapi/hapi');
 require('dotenv').config();
 
-// Impor handler yang sudah dipisahkan
-const inspectionHandler = require('./src/handlers/inspectionHandler');
+const inspectionHandler = require('./src/inspectionHandler'); // Hapus '/handlers' dari path
 
 const init = async () => {
     const server = Hapi.server({

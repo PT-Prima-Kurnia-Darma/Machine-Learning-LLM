@@ -1,8 +1,9 @@
-// File: handlers/inspectionHandler.js
+// File: src/inspectionHandler.js
 
 'use strict';
 
-const inspectionService = require('../services/inspectionService'); // <-- INI PERBAIKANNYA
+// PERBAIKAN: Path sekarang menunjuk ke file di direktori yang sama (./)
+const inspectionService = require('./inspectionService');
 
 async function postInspectionHandler(request, h) {
     try {
