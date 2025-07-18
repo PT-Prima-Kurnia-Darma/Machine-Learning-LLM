@@ -86,11 +86,11 @@ function summarizeInspectionFindings(inspectionDataObject) {
 
 /**
  * Creates the final, detailed prompt to be sent to the AI.
- * --- THIS IS THE FINAL VERSION WITH NO LENGTH RESTRICTIONS ---
+ * --- THIS FUNCTION IS UPDATED BASED ON THE LATEST INSTRUCTIONS ---
  */
 function createFinalPrompt(regulations, findingsSummary, generalData) {
     return `
-You are a senior OHS (K3) inspection expert. Your task is to conduct a thorough analysis of an inspection report and provide a comprehensive, unrestricted conclusion and set of recommendations based on a provided knowledge base. Do not summarize or shorten your reasoning.
+You are a senior OHS (K3) inspection expert. Your task is to analyze an inspection report and provide a conclusion and recommendations based on a provided knowledge base.
 
 ---
 [BUKU_PENGETAHUAN_K3]:
@@ -101,9 +101,9 @@ ${findingsSummary}
 ---
 
 ## TUGAS ANDA:
-1.  Lakukan analisis mendalam untuk setiap komponen dari [DATA_TEMUAN_LAPANGAN].
-2.  Bandingkan setiap temuan secara cermat dengan semua standar yang relevan di dalam [BUKU_PENGETAHUAN_K3].
-3.  Buatlah output dalam format JSON yang telah ditentukan di bawah tanpa ada batasan panjang.
+1.  Analisis setiap komponen dari [DATA_TEMUAN_LAPANGAN].
+2.  Bandingkan setiap temuan dengan standar yang ada di [BUKU_PENGETAHUAN_K3].
+3.  Buatlah output dalam format JSON yang telah ditentukan di bawah.
 
 ### Aturan Output JSON:
 
@@ -114,15 +114,15 @@ ${findingsSummary}
 #### 2. "recommendation" (Rekomendasi):
 * **Jika kesimpulan "TIDAK LAIK":**
     * Buat daftar rekomendasi dalam bentuk array of strings.
-    * Rekomendasi pertama HARUS selalu: "1. STOP OPERASIONAL".
-    * Untuk setiap temuan di [DATA_TEMUAN_LAPANGAN], buat satu "Rekomendasi Wajib" yang komprehensif, berdasarkan analisis dari [BUKU_PENGETAHUAN_K3].
+    * Rekomendasi pertama HARUS selalu: "1. STOP OPERASIONAL"
+    * Untuk setiap temuan di [DATA_TEMUAN_LAPANGAN], buat satu "Rekomendasi Wajib" yang sesuai dari [BUKU_PENGETAHUAN_K3].
     * **PENTING**: Urutkan rekomendasi (setelah "STOP OPERASIONAL") berdasarkan tingkat risiko bahaya, dari yang paling Kritis ke risiko yang lebih rendah.
-    * **INSTRUKSI DETAIL**: Setiap string rekomendasi HARUS **menjelaskan secara rinci justifikasinya**. Uraikan dengan lengkap standar mana yang dilanggar dari [BUKU_PENGETAHUAN_K3], dan jelaskan potensi bahaya atau konsekuensi kegagalan jika tidak segera diperbaiki. Berikan penjelasan selengkap mungkin.
+    * Setiap string rekomendasi HARUS menyertakan justifikasi singkat mengenai risiko atau standar yang dilanggar. Contoh: "2. Segera perbaiki klakson untuk memenuhi standar keselamatan alat angkat dan memastikan komunikasi di area kerja."
 
 * **Jika kesimpulan "LAIK":**
-    * Berikan satu rekomendasi tunggal untuk perawatan rutin dalam array, dengan penjelasan mengenai pentingnya perawatan tersebut. Contoh: ["1. Lanjutkan program perawatan rutin sesuai jadwal pabrikan untuk menjaga kondisi prima peralatan, memastikan keselamatan operator, dan memperpanjang umur pakai unit."].
+    * Berikan satu rekomendasi tunggal untuk perawatan rutin dalam array. Contoh: ["1. Lakukan perawatan rutin sesuai jadwal untuk menjaga performa dan keselamatan."].
 
-Sajikan output HANYA dalam format JSON di bawah ini, tanpa teks atau penjelasan tambahan di luar format tersebut.
+Sajikan output HANYA dalam format JSON di bawah ini, tanpa teks atau penjelasan tambahan.
 {
   "conclusion": "string",
   "recommendation": ["string", "string", "..."]
