@@ -25,7 +25,7 @@ Regulasi acuan utama: Peraturan Menteri Ketenagakerjaan No. 8 Tahun 2020 tentang
 5.  Jika SEMUA komponen statusnya "Memenuhi", gunakan **Skenario 1** sebagai template output.
 6.  Sajikan output HANYA dalam format skenario yang dipilih, tanpa teks atau penjelasan lain.
 
-***CATATAN***: Anda HARUS merespons HANYA dengan konten dari Skenario 1 atau Skenario 2, tanpa kalimat pembuka, penjelasan, atau teks tambahan lainnya. Buatkan dengan singkat saja tidak perlu panjang, cukup 100 kata saja.
+***CATATAN***: Anda HARUS merespons HANYA dengan konten dari Skenario 1 atau Skenario 2, tanpa kalimat pembuka, penjelasan, atau teks tambahan lainnya.
 
 ---
 
