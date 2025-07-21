@@ -1,16 +1,16 @@
-// File: src/inspectionService.js
-
+// File: src/inspections/service.js
 'use strict';
 
 const fs = require('fs/promises');
 const path = require('path');
 const { VertexAI } = require('@google-cloud/vertexai');
 
-// --- Konfigurasi dan inisialisasi AI ---
+// --- AI Configuration and Initialization ---
 const gcpProject = process.env.GCP_PROJECT_ID;
 const gcpLocation = process.env.GCP_LOCATION;
 const modelName = 'gemini-2.5-flash';
 
+// path adjusted to go up one level to find k3_knowledge
 const knowledgeDir = path.join(__dirname, 'k3_knowledge');
 
 const vertexAI = new VertexAI({ project: gcpProject, location: gcpLocation });
@@ -24,7 +24,7 @@ const generativeModel = vertexAI.getGenerativeModel({
 });
 
 
-// --- Semua fungsi helper menjadi fungsi internal di dalam service ---
+// --- Helper functions remain internal to the service ---
 
 async function getKnowledgeFromFile(equipmentType) {
     const equipmentKey = equipmentType.split(' ')[0].toLowerCase();
@@ -118,34 +118,35 @@ Provide the output ONLY in the specified JSON format, with no extra text or expl
 `;
 }
 
-// --- Fungsi utama service yang akan dipanggil oleh handler ---
+
+// --- Main service function called by the handler ---
 
 async function generateReport(inspectionInput) {
-    // 1. Jalankan semua logika bisnis
+    // 1. execute all business logic
     const regulations = await getKnowledgeFromFile(inspectionInput.equipmentType);
     const findingsSummary = summarizeInspectionFindings(inspectionInput.inspectionAndTesting);
     const finalPrompt = createFinalPrompt(regulations, findingsSummary, inspectionInput.equipmentType);
-    
-    // 2. Panggil AI
+
+    // 2. call the AI model
     const result = await generativeModel.generateContent(finalPrompt);
     const { response } = result;
 
     if (!response.candidates?.length || !response.candidates[0].content?.parts?.length) {
         throw new Error('Response from AI was empty, blocked, or invalid.');
     }
-    
-    // 3. Proses hasil dari AI
+
+    // 3. process the AI response
     const rawText = response.candidates[0].content.parts[0].text;
     const startIndex = rawText.indexOf('{');
     const endIndex = rawText.lastIndexOf('}');
-    
+
     if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
         throw new Error('Could not find a valid JSON object in the AI response.');
     }
 
     const jsonString = rawText.substring(startIndex, endIndex + 1);
-    
-    // 4. Kembalikan hasil akhir
+
+    // 4. return the final result
     return JSON.parse(jsonString);
 }
 

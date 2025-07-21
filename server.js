@@ -1,11 +1,11 @@
 // File: server.js
-
 'use strict';
 
 const Hapi = require('@hapi/hapi');
 require('dotenv').config();
 
-const inspectionHandler = require('./src/inspectionHandler'); // Hapus '/handlers' dari path
+// import the entire inspections plugin
+const inspectionsPlugin = require('./src/inspections'); // Node.js will automatically find index.js
 
 const init = async () => {
     const server = Hapi.server({
@@ -13,12 +13,9 @@ const init = async () => {
         host: '0.0.0.0',
     });
 
-    // Daftarkan rute, panggil handler dari file terpisah
-    server.route({
-        method: 'POST',
-        path: '/LLM-generate',
-        handler: inspectionHandler.postInspectionHandler,
-    });
+    // register the inspections plugin
+    // Hapi will handle loading its routes, handlers, etc.
+    await server.register(inspectionsPlugin);
 
     await server.start();
     console.log(`✅ Server running on ${server.info.uri}`);
@@ -26,7 +23,7 @@ const init = async () => {
     console.log(`Using Model: ${process.env.GCP_MODEL_NAME || 'gemini-2.5-flash'}`);
 };
 
-// Graceful shutdown logic
+// graceful shutdown logic
 process.on('SIGINT', async () => {
     console.log('Stopping server...');
     process.exit(0);
