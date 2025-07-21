@@ -10,8 +10,7 @@ const gcpProject = process.env.GCP_PROJECT_ID;
 const gcpLocation = process.env.GCP_LOCATION;
 const modelName = 'gemini-2.5-flash';
 
-// path adjusted to go up one level to find k3_knowledge
-const knowledgeDir = path.join(__dirname, 'k3_knowledge');
+const knowledgeDir = path.join(__dirname, "..", 'k3_knowledge');
 
 const vertexAI = new VertexAI({ project: gcpProject, location: gcpLocation });
 const generativeModel = vertexAI.getGenerativeModel({
@@ -20,7 +19,7 @@ const generativeModel = vertexAI.getGenerativeModel({
         category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
         threshold: 'BLOCK_ONLY_HIGH'
     }],
-    generationConfig: { maxOutputTokens: 8192, temperature: 0.2, responseMimeType: 'application/json' },
+    generationConfig: { maxOutputTokens: 10000, temperature: 0, responseMimeType: 'application/json' },
 });
 
 
