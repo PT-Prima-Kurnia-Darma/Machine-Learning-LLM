@@ -5,7 +5,7 @@ const Hapi = require('@hapi/hapi');
 require('dotenv').config();
 
 // import the entire inspections plugin
-const inspectionsPlugin = require('./src/inspections'); // Node.js will automatically find index.js
+const inspectionsPlugin = require('./src/inspections'); 
 
 const init = async () => {
     const server = Hapi.server({
