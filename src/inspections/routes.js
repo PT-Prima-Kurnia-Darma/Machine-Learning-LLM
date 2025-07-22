@@ -6,7 +6,7 @@ const handler = require('./handler');
 module.exports = [
     {
         method: 'POST',
-        path: '/llm-generate', // hapi convention is lowercase
+        path: '/llm-generate', 
         handler: handler.postInspectionHandler,
     }
 ];
