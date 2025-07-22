@@ -1,3 +1,5 @@
 .env
 /node_modules
-gemini-llm-vertexai-7ac893274345.json
+vertexai-testing-466701-38f40d20ae13.json
+.gcloudignore
+app.yaml
