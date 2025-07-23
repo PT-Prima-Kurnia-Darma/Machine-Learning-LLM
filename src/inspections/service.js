@@ -18,12 +18,17 @@ const generativeModel = vertexAI.getGenerativeModel({
         category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
         threshold: 'BLOCK_ONLY_HIGH'
     }],
-    generationConfig: { maxOutputTokens: 8192, temperature: 0.2, responseMimeType: 'application/json' },
+    generationConfig: { maxOutputTokens: 8192, temperature: 0, responseMimeType: 'application/json' },
 });
 
 
 // --- Helper Functions ---
 
+/**
+ * Reads the relevant knowledge base file based on equipment type.
+ * @param {string} equipmentType - The type of equipment being inspected.
+ * @returns {Promise<string>} The content of the knowledge base file.
+ */
 async function getKnowledgeFromFile(equipmentType) {
     const equipmentKey = equipmentType.split(' ')[0].toLowerCase();
     const allFiles = await fs.readdir(knowledgeDir);
@@ -39,6 +44,11 @@ async function getKnowledgeFromFile(equipmentType) {
     return fs.readFile(filePath, 'utf-8');
 }
 
+/**
+ * Traverses the inspection data to find and summarize items that failed (status: false).
+ * @param {object} inspectionDataObject - The 'inspectionAndTesting' part of the input JSON.
+ * @returns {string} A summary of findings.
+ */
 function summarizeInspectionFindings(inspectionDataObject) {
     const findings = [];
     function traverse(obj, currentPath) {
@@ -60,47 +70,13 @@ function summarizeInspectionFindings(inspectionDataObject) {
     return 'Found several items that do not meet the standards:\n' + findings.join('\n');
 }
 
-// Helper to get month number from Indonesian month name
-function getMonthNumber(monthName) {
-    const months = {
-        'januari': '01', 'februari': '02', 'maret': '03', 'april': '04', 
-        'mei': '05', 'juni': '06', 'juli': '07', 'agustus': '08', 
-        'september': '09', 'oktober': '10', 'november': '11', 'desember': '12'
-    };
-    return months[monthName.toLowerCase()];
-}
-
-// Helper to parse various user-input date formats
-function parseFlexibleDate(dateString) {
-    if (!dateString || typeof dateString !== 'string') return null;
-
-    const cleanedString = dateString.replace(/-/g, ' ').replace(/\//g, ' ');
-    const parts = cleanedString.split(' ').filter(p => p);
-
-    if (parts.length === 3) {
-        let day, month, year;
-        if (isNaN(parseInt(parts[1]))) { // Format: "12 Desember 2025"
-            day = parts[0];
-            month = getMonthNumber(parts[1]);
-            year = parts[2];
-        } else { // Format: "12 05 2025"
-            [day, month, year] = parts;
-        }
-        if (day && month && year && year.length === 4) {
-             // Use YYYY-MM-DD for reliable Date parsing
-            return new Date(`${year}-${month}-${day}T00:00:00`);
-        }
-    }
-    
-    const date = new Date(dateString);
-    if (!isNaN(date.getTime())) {
-        return date;
-    }
-
-    return null; // Return null if parsing fails
-}
-
-
+/**
+ * Creates the detailed prompt for the Gemini AI model.
+ * @param {string} regulations - The knowledge base content.
+ * @param {string} findingsSummary - The summary of failed items.
+ * @param {string} equipmentType - The type of equipment.
+ * @returns {string} The complete prompt for the AI.
+ */
 function createFinalPrompt(regulations, findingsSummary, equipmentType) {
     // Prompt for the AI model, with a unique placeholder for the next inspection date.
     return `
@@ -156,9 +132,13 @@ Provide the output ONLY in the specified JSON format, with no extra text or expl
 `;
 }
 
-
 // --- Main Service Function ---
 
+/**
+ * Generates an inspection report by processing input data with an AI model.
+ * @param {object} inspectionInput - The raw JSON input for the inspection.
+ * @returns {Promise<object>} The final, processed report from the AI.
+ */
 async function generateReport(inspectionInput) {
     // 1. Prepare data and prompt for the AI
     const regulations = await getKnowledgeFromFile(inspectionInput.equipmentType);
@@ -185,17 +165,22 @@ async function generateReport(inspectionInput) {
     const jsonString = rawText.substring(startIndex, endIndex + 1);
     const aiResult = JSON.parse(jsonString);
 
-    // 4. Post-process the AI result to add the calculated next inspection date
+    // 4. Post-process: Calculate next inspection date from 'createdAt' if the conclusion is "LAYAK"
     if (aiResult.conclusion && aiResult.conclusion.includes("LAYAK")) {
-        const userInputDateString = inspectionInput.generalData.inspectionDate;
-        const inspectionDate = parseFlexibleDate(userInputDateString);
+        // Use the 'createdAt' field which is in reliable ISO 8601 format
+        const inspectionDate = new Date(inspectionInput.createdAt);
 
-        if (inspectionDate) {
+        // Check if the date is valid before proceeding
+        if (!isNaN(inspectionDate.getTime())) {
+            // Add one year to the inspection date
             inspectionDate.setFullYear(inspectionDate.getFullYear() + 1);
+            
+            // Format the date to "DD MMMM YYYY" in Indonesian
             const nextInspectionDateFormatted = new Intl.DateTimeFormat('id-ID', {
                 day: 'numeric', month: 'long', year: 'numeric'
             }).format(inspectionDate);
 
+            // Replace the placeholder in the recommendation list
             if (aiResult.recommendation && aiResult.recommendation.length > 0) {
                 const lastIndex = aiResult.recommendation.length - 1;
                 aiResult.recommendation[lastIndex] = aiResult.recommendation[lastIndex]
